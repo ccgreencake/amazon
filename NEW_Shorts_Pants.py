@@ -8,12 +8,12 @@ date_string = today.strftime("%Y/%m/%d")
 sku_date=today.strftime("%Y%m%d")
 
 # 读取源表格文件
-source_file = r'C:\Users\123\Desktop\product\240327\product_03.xls'  # 替换为实际的源文件路径
+source_file = r'C:\Users\123\Desktop\product\240327\product_10.xls'  # 替换为实际的源文件路径
 df_source = pd.read_excel(source_file)
 
 
 # 读取埋词文件
-source_file2 = r'C:\Users\123\Desktop\埋词\yoga.xlsx'  # 替换为实际的源文件路径
+source_file2 = r'C:\Users\123\Desktop\埋词\cropped.xlsx'  # 替换为实际的源文件路径
 df_source2 = pd.read_excel(source_file2)
 
 #提取埋词
@@ -91,8 +91,8 @@ df_new['brand'] = ['sttsgwyt'] * length
 df_new['update'] = ['Update'] * length
 df_new['item_name'] = title
 
-# 填充空白列
-df_new[[f'blank{i}' for i in range(1, 3)]] = np.nan
+
+df_new[[f'blank{i}' for i in range(1, 5)]] = np.nan
 
 df_new['product_description'] = product_description
 string = title[0]
@@ -107,16 +107,10 @@ n = 1
 word_name = 'word'+str(n)
 df_new[word_name] = [word[n]] * length
 n=n+1
-# 填充空白列
-df_new[[f'blank{i}' for i in range(3, 6)]] = np.nan
-
 for i in range(5):
     word_name = 'word'+str(n)
     df_new[word_name] = [word[n]] * length
     n=n+1
-
-
-df_new[[f'blank{i}' for i in range(6, 9)]] = np.nan
 df_new['price'] = price  # 后续要去除第一行
 df_new['quantity'] = ['500'] * length
 df_new['gender'] = ['Female'] * length
@@ -125,8 +119,6 @@ df_new['size_sys'] = ['US'] * length
 df_new['Alpha'] = ['Alpha'] * length
 df_new['size'] = size
 
-# 填充空白列
-df_new[[f'blank{i}' for i in range(18, 21)]] = np.nan
 
 df_new['body_type'] = ['Regular'] * length
 df_new['height_type'] = ['Regular'] * length
@@ -152,58 +144,52 @@ df_new['relationship'] = ['Variation'] * length
 df_new.loc[0, 'relationship'] = np.nan
 df_new['variation_theme'] = ['color-size'] * length
 
-# 填充空白列
-df_new[[f'blank{i}' for i in range(31, 34)]] = np.nan
-
 for i in range(5):
     name = 'point'+str(i)
     df_new[name] = [point5[i]] * length
 key = title[1] + ' ' + word[1]+' ' +  word[2]+' ' +  word[3]+ ' ' + word[4]+ ' ' + word[5]
 
 df_new['key'] = [key.lower()] * length
-df_new[[f'blank{i}' for i in range(34, 35)]] = np.nan
+
 df_new['color'] = color
 df_new['color_map'] = color
 df_new.loc[0, ['color', 'color_map']] = np.nan
 
-# 填充空白列
-df_new[[f'blank{i}' for i in range(41, 42)]] = np.nan
+
 
 df_new['department'] = ['Women'] * length
 df_new.loc[0, 'department'] = np.nan
 df_new['fit_type'] = ['Regular'] * length
 df_new.loc[0, 'fit_type'] = np.nan
-# 填充空白列
-df_new[[f'blank{i}' for i in range(42, 47)]] = np.nan
+
+
 
 df_new['rise_style'] = [rise] * length
 df_new.loc[0, 'rise_style'] = np.nan
-df_new[[f'blank{i}' for i in range(47, 58)]] = np.nan
+
 
 
 df_new['is_autographed'] = ['No'] * length
 df_new.loc[0, 'is_autographed'] = np.nan
-df_new[[f'blank{i}' for i in range(58, 59)]] = np.nan
+
 for i in range(5):
     word_name = 'word'+str(n)
     df_new[word_name] = [word[n]] * length
     n=n+1
-# 填充空白列
-df_new[[f'blank{i}' for i in range(59, 63)]] = np.nan
+
+
 
 word_name = 'word'+str(n)
 df_new[word_name] = [word[n]] * length
 n=n+1
 
-df_new[[f'blank{i}' for i in range(63, 67)]] = np.nan
+
 
 word_name = 'word'+str(n)
 df_new[word_name] = [word[n]] * length
 n=n+1
-df_new[[f'blank{i}' for i in range(67, 69)]] = np.nan
 df_new['date'] = [date_string] * length
 df_new.loc[0, 'date'] = np.nan
-df_new[[f'blank{i}' for i in range(76, 79)]] = np.nan
 string = title[0]
 if "Flare" in string:
     leg_style = 'Flared'
@@ -213,50 +199,41 @@ else:
     leg_style = 'Wide'
 df_new['leg_style'] = [leg_style] * length
 df_new.loc[0, 'leg_style'] = np.nan
-# 填充空白列
-df_new[[f'blank{i}' for i in range(79, 80)]] = np.nan
+
 
 for i in range(3):
     word_name = 'word'+str(n)
     df_new[word_name] = [word[n]] * length
     n=n+1
 
-# 填充空白列
-df_new[[f'blank{i}' for i in range(80, 89)]] = np.nan
+
 
 # 创建一个新的数组，将修改后的字符串存储其中
 size_map = [str(string).replace("2X", "XX").replace("3X", "XXX").replace("4X", "XXXX").replace("5X", "XXXXX") for string in size]
 
 df_new['size_map'] = size_map
 df_new.loc[0, 'size_map'] = np.nan
-
-# 填充空白列
-df_new[[f'blank{i}' for i in range(92, 135)]] = np.nan
+df_new['size_name'] = size_map
+df_new.loc[0, 'size_name'] = np.nan
 word_name = 'word'+str(n)
 df_new[word_name] = [word[n]] * length
 n=n+1
 word_name = 'word'+str(n)
 df_new[word_name] = [word[n]] * length
 n=n+1
-df_new['blank135'] = np.nan
 word_name = 'word'+str(n)
 df_new[word_name] = [word[n]] * length
 n=n+1
-# 填充空白列
-df_new[[f'blank{i}' for i in range(136, 140)]] = np.nan
 word_name = 'word'+str(n)
 df_new[word_name] = [word[n]] * length
 n=n+1
-df_new.loc[0, [f'blank{i}' for i in range(140, 161)]] = np.nan
 df_new['list_price'] = price
 df_new.loc[0, 'list_price'] = np.nan
-df_new.loc[0, [f'blank{i}' for i in range(164, 165)]] = np.nan
 df_new['currency'] = ['USD'] * length
 df_new.loc[0, 'currency'] = np.nan
 df_new['condition_type'] = ['New'] * length
 df_new.loc[0, 'condition_type'] = np.nan
-# 填充空白列
-df_new[[f'blank{i}' for i in range(165, 182)]] = np.nan
+
 
 df_new['shipping'] = ['Jeweli'] * length
 df_new.loc[0, 'shipping'] = np.nan
