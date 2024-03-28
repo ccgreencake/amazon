@@ -8,12 +8,12 @@ date_string = today.strftime("%Y/%m/%d")
 sku_date=today.strftime("%Y%m%d")
 
 # 读取源表格文件
-source_file = r'C:\Users\123\Desktop\product\240327\product_10.xls'  # 替换为实际的源文件路径
+source_file = r'C:\Users\123\Desktop\product\240328\product_07.xls'  # 替换为实际的源文件路径
 df_source = pd.read_excel(source_file)
 
 
 # 读取埋词文件
-source_file2 = r'C:\Users\123\Desktop\埋词\cropped.xlsx'  # 替换为实际的源文件路径
+source_file2 = r'C:\Users\123\Desktop\埋词\shorts.xlsx'  # 替换为实际的源文件路径
 df_source2 = pd.read_excel(source_file2)
 
 #提取埋词
@@ -27,7 +27,6 @@ table_name = os.path.splitext(file_name)[0]
 
 prefix = "product_"
 new_string = table_name[len(prefix):]
-print(new_string)
 
 # 提取sku
 sku_old = df_source.iloc[0:, 0]
@@ -36,12 +35,11 @@ sku = []
 prefix = "meilu"+sku_date+new_string
 
 for string in sku_old:
-    new_string = prefix + string
+    new_string = prefix + str(string)
     sku.append(new_string)
 
 # 提取title
 title = df_source.iloc[0:, 2]
-print(title[0])
 string = title[0]
 if "High" in string:
     rise = 'high'
@@ -49,10 +47,19 @@ elif "Low" in string:
     rise = 'low'
 else:
     rise = 'mid'
-# 提取description
-product_description = df_source.iloc[0:, 3]
+
 # 提取color
-color = df_source.iloc[0:, 4]
+colors = df_source.iloc[0:, 4]
+n=0
+new_color = []
+
+for i in range(len(colors)):
+    if i != 0:
+        if colors[i] != colors[(i-1)]:
+            n = n+1
+    prefix = "A" + str(n).zfill(3) + "-"
+    color = prefix + str(colors[i])
+    new_color.append(color)
 # 提取size
 size = df_source.iloc[0:, 5]
 # 提取价格
@@ -92,9 +99,45 @@ df_new['update'] = ['Update'] * length
 df_new['item_name'] = title
 
 
-df_new[[f'blank{i}' for i in range(1, 5)]] = np.nan
+
+size_chart = df_source.iloc[1,26]
+p5 = df_source.iloc[0:,27]
+part1 = p5[0].split(":")
+part2 = p5[1].split(":")
+part3 = p5[2].split(":")
+df_new['p1'] = [p5[0]]*length
+df_new['p2'] = [p5[1]]*length
+df_new['p3'] = [p5[2]]*length
+df_new['p4'] = [p5[3]]*length
+output_string = size_chart.replace("Size: ", "").replace(" Waist: ", " &emsp; ").replace(" Hip: ", " &emsp; ").replace(" Length: ", " &emsp; ").replace("\n", " <br>\n")
+# 打开文本文件进行读取
+with open('html.txt', 'r',encoding='utf-8') as file:
+    # 读取文件内容
+    file_content = file.read()
+# 进行替换操作
+file_content = file_content.replace("<strong>Length</strong><br>","<strong>Length</strong><br>\n"+output_string)
+first_position = file_content.find("<p><strong></strong></p>")
+# 查找第二个 <p><strong> 的位置
+second_position = file_content.find("<p><strong></strong></p>", first_position + 1)
+# 查找第3个 <p><strong> 的位置
+third_position = file_content.find("<p><strong></strong></p>", second_position + 1)
+# 查找第一个 <p></p> 的位置
+first_p = file_content.find("<p></p>")
+# 查找第二个 <p></p>  的位置
+second_p = file_content.find("<p></p>", first_p + 1)
+# 查找第二个 <p></p>  的位置
+third_p = file_content.find("<p></p>", second_p + 1)
+
+
+product_description = file_content[:third_p] + "<p>"+part3[1]+"</p>" + file_content[third_p+7:]
+product_description = product_description[:third_position]+"<p><strong>"+part3[0]+"</strong></p>"+product_description[third_position+24:]
+product_description = product_description[:second_p] + "<p>"+part2[1]+"</p>" + product_description[second_p+7:]
+product_description = product_description[:second_position] + "<p><strong>"+part2[0]+"</strong></p>" + product_description[second_position+24:]
+product_description = product_description[:first_p] + "<p>"+part1[1]+"</p>" + product_description[first_p+7:]
+product_description = product_description[:first_position] + "<p><strong>"+part1[0]+"</strong></p>" + product_description[first_position+24:]
 
 df_new['product_description'] = product_description
+print('大描述长度：'+str(len(product_description)))
 string = title[0]
 if "Casual" in string:
     item_type = 'casual-pants'
@@ -147,12 +190,13 @@ df_new['variation_theme'] = ['color-size'] * length
 for i in range(5):
     name = 'point'+str(i)
     df_new[name] = [point5[i]] * length
-key = title[1] + ' ' + word[1]+' ' +  word[2]+' ' +  word[3]+ ' ' + word[4]+ ' ' + word[5]
+key = title[1] + ' ' + word[1]+' ' +  word[2]+' ' +  word[3]
 
 df_new['key'] = [key.lower()] * length
+print('key:'+str(len(key)))
 
-df_new['color'] = color
-df_new['color_map'] = color
+df_new['color'] = new_color
+df_new['color_map'] = new_color
 df_new.loc[0, ['color', 'color_map']] = np.nan
 
 
@@ -188,8 +232,7 @@ n=n+1
 word_name = 'word'+str(n)
 df_new[word_name] = [word[n]] * length
 n=n+1
-df_new['date'] = [date_string] * length
-df_new.loc[0, 'date'] = np.nan
+
 string = title[0]
 if "Flare" in string:
     leg_style = 'Flared'

@@ -10,8 +10,8 @@ file_list = os.listdir(folder_path)
 for i, file_name in enumerate(file_list):
     file_path = os.path.join(folder_path, file_name)
     if i < 9:
-        new_file_name = date_str + "0" + str(i + 5) + os.path.splitext(file_name)[1]
+        new_file_name = date_str + "0" + str(i + 3) + os.path.splitext(file_name)[1]
     else:
-        new_file_name = date_str + str(i + 5) + os.path.splitext(file_name)[1]
+        new_file_name = date_str + str(i + 3) + os.path.splitext(file_name)[1]
     new_file_path = os.path.join(folder_path, new_file_name)
     os.rename(file_path, new_file_path)
