@@ -135,7 +135,11 @@ product_description = product_description[:second_p] + "<p>"+part2[1]+"</p>" + p
 product_description = product_description[:second_position] + "<p><strong>"+part2[0]+"</strong></p>" + product_description[second_position+24:]
 product_description = product_description[:first_p] + "<p>"+part1[1]+"</p>" + product_description[first_p+7:]
 product_description = product_description[:first_position] + "<p><strong>"+part1[0]+"</strong></p>" + product_description[first_position+24:]
-
+n = 1
+for i in range(20):
+    word_name = 'word'+str(n)
+    df_new[word_name] = [word[n]] * length
+    n=n+1
 df_new['product_description'] = product_description
 print('大描述长度：'+str(len(product_description)))
 string = title[0]
@@ -146,14 +150,7 @@ elif "Yoga" in string:
 else:
     item_type = 'pants'
 df_new['item_type'] = [item_type] * length
-n = 1
-word_name = 'word'+str(n)
-df_new[word_name] = [word[n]] * length
-n=n+1
-for i in range(5):
-    word_name = 'word'+str(n)
-    df_new[word_name] = [word[n]] * length
-    n=n+1
+
 df_new['price'] = price  # 后续要去除第一行
 df_new['quantity'] = ['500'] * length
 df_new['gender'] = ['Female'] * length
@@ -216,22 +213,7 @@ df_new.loc[0, 'rise_style'] = np.nan
 df_new['is_autographed'] = ['No'] * length
 df_new.loc[0, 'is_autographed'] = np.nan
 
-for i in range(5):
-    word_name = 'word'+str(n)
-    df_new[word_name] = [word[n]] * length
-    n=n+1
 
-
-
-word_name = 'word'+str(n)
-df_new[word_name] = [word[n]] * length
-n=n+1
-
-
-
-word_name = 'word'+str(n)
-df_new[word_name] = [word[n]] * length
-n=n+1
 
 string = title[0]
 if "Flare" in string:
@@ -244,10 +226,7 @@ df_new['leg_style'] = [leg_style] * length
 df_new.loc[0, 'leg_style'] = np.nan
 
 
-for i in range(3):
-    word_name = 'word'+str(n)
-    df_new[word_name] = [word[n]] * length
-    n=n+1
+
 
 
 
@@ -258,18 +237,8 @@ df_new['size_map'] = size_map
 df_new.loc[0, 'size_map'] = np.nan
 df_new['size_name'] = size_map
 df_new.loc[0, 'size_name'] = np.nan
-word_name = 'word'+str(n)
-df_new[word_name] = [word[n]] * length
-n=n+1
-word_name = 'word'+str(n)
-df_new[word_name] = [word[n]] * length
-n=n+1
-word_name = 'word'+str(n)
-df_new[word_name] = [word[n]] * length
-n=n+1
-word_name = 'word'+str(n)
-df_new[word_name] = [word[n]] * length
-n=n+1
+
+
 df_new['list_price'] = price
 df_new.loc[0, 'list_price'] = np.nan
 df_new['currency'] = ['USD'] * length
