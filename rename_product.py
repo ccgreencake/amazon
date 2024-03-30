@@ -4,7 +4,7 @@ from datetime import date
 today = date.today()
 date_str=today.strftime("%Y%m%d")
 
-folder_path = r"C:\Users\123\Desktop\product\240329"  # 替换为实际的文件夹路径
+folder_path = r"C:\Users\123\Desktop\product\240330"  # 替换为实际的文件夹路径
 file_list = os.listdir(folder_path)
 
 for i, file_name in enumerate(file_list):

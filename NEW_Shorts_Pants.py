@@ -8,12 +8,12 @@ date_string = today.strftime("%Y/%m/%d")
 sku_date=today.strftime("%Y%m%d")
 
 # 读取源表格文件
-source_file = r'C:\Users\123\Desktop\product\240328\product_07.xls'  # 替换为实际的源文件路径
+source_file = r'C:\Users\123\Desktop\product\240330\product_05.xls'  # 替换为实际的源文件路径
 df_source = pd.read_excel(source_file)
 
 
 # 读取埋词文件
-source_file2 = r'C:\Users\123\Desktop\埋词\shorts.xlsx'  # 替换为实际的源文件路径
+source_file2 = r'C:\Users\123\Desktop\埋词\cropped.xlsx'  # 替换为实际的源文件路径
 df_source2 = pd.read_excel(source_file2)
 
 #提取埋词
@@ -96,7 +96,9 @@ df_new['Column2'] = sku
 
 df_new['brand'] = ['sttsgwyt'] * length
 df_new['update'] = ['Update'] * length
-df_new['item_name'] = title
+colors[0] = np.nan
+new_title = [str(f_title) + ' ' + str(color) if i > 0 else f_title for i, (f_title, color) in enumerate(zip(title, colors))]
+df_new['item_name'] = new_title
 
 
 
@@ -143,10 +145,12 @@ for i in range(20):
 df_new['product_description'] = product_description
 print('大描述长度：'+str(len(product_description)))
 string = title[0]
-if "Casual" in string:
-    item_type = 'casual-pants'
+if "Dress" in string:
+    item_type = 'dress-pants'
 elif "Yoga" in string:
     item_type = 'yoga-pants'
+elif "Casual" in string:
+    item_type = 'casual-pants'
 else:
     item_type = 'pants'
 df_new['item_type'] = [item_type] * length

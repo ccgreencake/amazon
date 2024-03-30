@@ -77,7 +77,10 @@ df_new['Column1'] = ['pants'] * length
 # 插入目标数据到第二列
 df_new['Column2'] = sku
 
-df_new['brand'] = ['sttsgwyt'] * length
+#改牌子
+brand = 'xxx'
+
+df_new['brand'] = [brand] * length
 df_new['update'] = ['Update'] * length
 df_new['item_name'] = title
 
@@ -213,7 +216,12 @@ df_new.loc[0, 'condition_type'] = np.nan
 # 填充空白列
 df_new[[f'blank{i}' for i in range(164, 181)]] = np.nan
 
-df_new['shipping'] = ['Jeweli'] * length
+
+#改运费
+shipping = 'xxx'
+
+
+df_new['shipping'] = [shipping] * length
 df_new.loc[0, 'shipping'] = np.nan
 
 # 保存新的数据框架为 Excel 文件
