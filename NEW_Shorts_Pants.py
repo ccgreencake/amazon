@@ -8,13 +8,12 @@ date_string = today.strftime("%Y/%m/%d")
 sku_date=today.strftime("%Y%m%d")
 
 # 读取源表格文件
-source_file = r'C:\Users\123\Desktop\product\240330\product_05.xls'  # 替换为实际的源文件路径
+source_file = r'C:\Users\123\Desktop\product\240408\product_10.xls'  # 替换为实际的源文件路径
 df_source = pd.read_excel(source_file)
 
 
-# 读取埋词文件
-source_file2 = r'C:\Users\123\Desktop\埋词\cropped.xlsx'  # 替换为实际的源文件路径
-df_source2 = pd.read_excel(source_file2)
+source_file2 = r'C:\Users\123\Desktop\new 词表.xlsx'  # 替换为实际的源文件路径
+df_source2 = pd.read_excel(source_file2, sheet_name='cropped')
 
 #提取埋词
 word = df_source2.iloc[0:, 0]
@@ -32,7 +31,7 @@ new_string = table_name[len(prefix):]
 sku_old = df_source.iloc[0:, 0]
 
 sku = []
-prefix = "meilu"+sku_date+new_string
+prefix = "xh"+sku_date+new_string
 
 for string in sku_old:
     new_string = prefix + str(string)
@@ -65,14 +64,18 @@ size = df_source.iloc[0:, 5]
 # 提取价格
 price_str = df_source.iloc[0:, 7]
 price = []
+list_price=[]
 
 for string in price_str:
     start_index = string.find("*US灵境：") + len("*US灵境：")
     end_index = string.find(" USD  *US顺丰")
     new_string = string[start_index:end_index]
-    rounded_float = round(float(new_string), 1) - 0.01
+    rounded_float = round(float(new_string), 1) - 2.01
+    rounded_float1 = rounded_float+6
     formatted_string = "{:.2f}".format(rounded_float)
+    formatted_string1 = "{:.2f}".format(rounded_float1)
     price.append(formatted_string)
+    list_price.append(formatted_string1)
 
 #提取图片
 main_img = df_source.iloc[0:,11]
@@ -89,16 +92,24 @@ final_img = df_source.iloc[0:,13]
 df_new = pd.DataFrame()
 
 length = len(sku)  # 填充的长度
-df_new['Column1'] = ['pants'] * length
+if 'Shorts' in title[0]:
+    feed_product = 'shorts'
+else:
+    feed_product = 'pants'
+df_new['Column1'] = [feed_product] * length
 
 # 插入目标数据到第二列
 df_new['Column2'] = sku
 
-df_new['brand'] = ['sttsgwyt'] * length
+df_new['brand'] = ['Bakgeerle'] * length
 df_new['update'] = ['Update'] * length
 colors[0] = np.nan
 new_title = [str(f_title) + ' ' + str(color) if i > 0 else f_title for i, (f_title, color) in enumerate(zip(title, colors))]
 df_new['item_name'] = new_title
+df_new['length'] = ['regular']*length
+key = title[1] + ' ' + word[1]+' ' +  word[2]+' ' +  word[3]
+df_new['key'] = [key.lower()] * length
+print('key:'+str(len(key)))
 
 
 
@@ -107,10 +118,31 @@ p5 = df_source.iloc[0:,27]
 part1 = p5[0].split(":")
 part2 = p5[1].split(":")
 part3 = p5[2].split(":")
+for i in range(4):
+    # 找到【的索引位置
+    index = p5[i].find('【')
+
+    # 如果找到了【，则去除该字符及其之前的部分
+    if index != -1:
+        p5[i] = p5[i][index:]
+
 df_new['p1'] = [p5[0]]*length
 df_new['p2'] = [p5[1]]*length
-df_new['p3'] = [p5[2]]*length
+if feed_product == 'pants':
+    df_new['p3'] = [p5[2]]*length
+else:
+    df_new['p3'] = ['71%Polyester,18%Cotton,11%Spandex']*length
 df_new['p4'] = [p5[3]]*length
+
+# for i in range(5):
+#     name = 'point'+str(i)
+#     df_new[name] = [point5[i]] * length
+# key = title[1] + ' ' + word[1]+' ' +  word[2]+' ' +  word[3]
+#
+# df_new['key'] = [key.lower()] * length
+# print('key:'+str(len(key)))
+
+
 output_string = size_chart.replace("Size: ", "").replace(" Waist: ", " &emsp; ").replace(" Hip: ", " &emsp; ").replace(" Length: ", " &emsp; ").replace("\n", " <br>\n")
 # 打开文本文件进行读取
 with open('html.txt', 'r',encoding='utf-8') as file:
@@ -145,14 +177,26 @@ for i in range(20):
 df_new['product_description'] = product_description
 print('大描述长度：'+str(len(product_description)))
 string = title[0]
-if "Dress" in string:
-    item_type = 'dress-pants'
-elif "Yoga" in string:
-    item_type = 'yoga-pants'
-elif "Casual" in string:
-    item_type = 'casual-pants'
+if feed_product == 'pants':
+    if "Dress" in string:
+        item_type = 'dress-pants'
+    elif "Yoga" in string:
+        item_type = 'yoga-pants'
+    elif "Casual" in string:
+        item_type = 'casual-pants'
+    else:
+        item_type = 'pants'
 else:
-    item_type = 'pants'
+    if "denim" in string or "jeans" in string:
+        item_type = 'denim-shorts'
+    elif "cargo" in string:
+        item_type = 'cargo-shorts'
+    elif "running" in string or "jogger" in string:
+        item_type = 'running-shorts'
+    elif "hiking" in string:
+        item_type = 'hiking-shorts'
+    else:
+        item_type = 'shorts'
 df_new['item_type'] = [item_type] * length
 
 df_new['price'] = price  # 后续要去除第一行
@@ -187,14 +231,10 @@ df_new.loc[0, 'parent_sku'] = np.nan
 df_new['relationship'] = ['Variation'] * length
 df_new.loc[0, 'relationship'] = np.nan
 df_new['variation_theme'] = ['color-size'] * length
-
 for i in range(5):
     name = 'point'+str(i)
     df_new[name] = [point5[i]] * length
-key = title[1] + ' ' + word[1]+' ' +  word[2]+' ' +  word[3]
 
-df_new['key'] = [key.lower()] * length
-print('key:'+str(len(key)))
 
 df_new['color'] = new_color
 df_new['color_map'] = new_color
@@ -243,7 +283,7 @@ df_new['size_name'] = size_map
 df_new.loc[0, 'size_name'] = np.nan
 
 
-df_new['list_price'] = price
+df_new['list_price'] = list_price
 df_new.loc[0, 'list_price'] = np.nan
 df_new['currency'] = ['USD'] * length
 df_new.loc[0, 'currency'] = np.nan
@@ -251,7 +291,7 @@ df_new['condition_type'] = ['New'] * length
 df_new.loc[0, 'condition_type'] = np.nan
 
 
-df_new['shipping'] = ['Jeweli'] * length
+df_new['shipping'] = ['0'] * length
 df_new.loc[0, 'shipping'] = np.nan
 
 # 保存新的数据框架为 Excel 文件
