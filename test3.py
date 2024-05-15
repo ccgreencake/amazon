@@ -1,44 +1,30 @@
-import pandas as pd
-import os
-import numpy as np
-from datetime import date
+import openpyxl
 
-today = date.today()
-date_string = today.strftime("%Y/%m/%d")
+# 读取包含数据的XLSX文件
+input_file = r'C:\Users\123\Desktop\工作簿4.xlsx'  # 替换为您的输入文件路径
+output_file = 'output.xlsx'  # 替换为您的输出文件路径
 
-# 读取源表格文件
-source_file = r'C:\Users\123\Desktop\product_24032301.xls'  # 替换为实际的源文件路径
-df_source = pd.read_excel(source_file)
+# 读取数据文件
+workbook = openpyxl.load_workbook(input_file)
+sheet = workbook.active
 
-# 提取sku
-sku = df_source.iloc[0:, 0]
+# 获取数据的列
+column_data = [cell.value for cell in sheet['A']]
 
-# 提取title
-title = df_source.iloc[0:, 2]
-print(title[0])
-string = title[0]
-if "High" in string:
-    rise = 'high'
-elif "Low" in string:
-    rise = 'low'
-else:
-    rise = 'mid'
-# 提取description
-product_description = df_source.iloc[0:, 3]
-# 提取color
-color = df_source.iloc[0:, 4]
-# 提取size
-size = df_source.iloc[0:, 5]
-# 提取价格
-price_str = df_source.iloc[0:, 7]
-new_array = []
 
-for string in price_str:
-    start_index = string.find("*US灵境：") + len("*US灵境：")
-    end_index = string.find(" USD  *US顺丰")
-    new_string = string[start_index:end_index]
-    rounded_float = round(float(new_string), 1) - 0.01
-    formatted_string = "{:.2f}".format(rounded_float)
-    new_array.append(formatted_string)
+num_rows = 80
+num_columns = -(-len(column_data) // num_rows)  # 向上取整，计算所需的列数
+split_data = [column_data[i:i+num_rows] for i in range(0, len(column_data), num_rows)]
 
-print(new_array)
+# 创建新的XLSX文件并写入拆分后的结果
+output_workbook = openpyxl.Workbook()
+output_sheet = output_workbook.active
+
+for col_idx, column in enumerate(split_data, start=1):
+    for row_idx, value in enumerate(column, start=1):
+        output_sheet.cell(row=row_idx, column=col_idx, value=value)
+
+# 保存新的XLSX文件
+output_workbook.save(output_file)
+
+print("拆分完成，结果已保存到", output_file)
