@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>词频分析工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-size: 16px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>词频分析工具</h1>
+    <div class="container">
+        <input type="file" id="fileInput" accept=".xlsx" />
+        <button class="button" id="analyzeButton">生成词频表</button>
+        <button class="button" id="downloadButton" style="display: none;">下载结果</button>
+        <div id="tableContainer"></div>
+    </div>
+
+    <!-- Include XLSX Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        document.getElementById('analyzeButton').addEventListener('click', () => {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert('请先上传一个文件！');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                const firstColumn = jsonData.map(row => row[0]).filter(Boolean).join(' ');
+
+                const oneWordMatches = firstColumn.match(/\b\w+\b/g) || [];
+                const twoWordMatches = firstColumn.match(/\b\w+\s\w+\b/g) || [];
+                const threeWordMatches = firstColumn.match(/\b\w+\s\w+\s\w+\b/g) || [];
+
+                const oneWordCount = countFrequencies(oneWordMatches);
+                const twoWordCount = countFrequencies(twoWordMatches);
+                const threeWordCount = countFrequencies(threeWordMatches);
+
+                const tableData = mergeFrequencies(oneWordCount, twoWordCount, threeWordCount);
+                displayTable(tableData);
+                enableDownload(tableData);
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+
+        function countFrequencies(array) {
+            const counts = {};
+            array.forEach(item => {
+                counts[item] = (counts[item] || 0) + 1;
+            });
+            return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+        }
+
+        function mergeFrequencies(oneWord, twoWord, threeWord) {
+            const maxLength = Math.max(oneWord.length, twoWord.length, threeWord.length);
+            const tableData = [];
+
+            for (let i = 0; i < maxLength; i++) {
+                tableData.push({
+                    oneWord: oneWord[i]?.[0] || '',
+                    oneWordFreq: oneWord[i]?.[1] || '',
+                    twoWord: twoWord[i]?.[0] || '',
+                    twoWordFreq: twoWord[i]?.[1] || '',
+                    threeWord: threeWord[i]?.[0] || '',
+                    threeWordFreq: threeWord[i]?.[1] || ''
+                });
+            }
+
+            return tableData;
+        }
+
+        function displayTable(data) {
+            const container = document.getElementById('tableContainer');
+            container.innerHTML = '';
+
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+
+            thead.innerHTML = `
+                <tr>
+                    <th>单词</th>
+                    <th>单词频率</th>
+                    <th>双词</th>
+                    <th>双词频率</th>
+                    <th>三词</th>
+                    <th>三词频率</th>
+                </tr>
+            `;
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.oneWord}</td>
+                    <td>${row.oneWordFreq}</td>
+                    <td>${row.twoWord}</td>
+                    <td>${row.twoWordFreq}</td>
+                    <td>${row.threeWord}</td>
+                    <td>${row.threeWordFreq}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+
+        function enableDownload(data) {
+            const downloadButton = document.getElementById('downloadButton');
+            downloadButton.style.display = 'inline-block';
+
+            downloadButton.addEventListener('click', () => {
+                const worksheet = XLSX.utils.json_to_sheet(data.map(row => ({
+                    '单词': row.oneWord,
+                    '单词频率': row.oneWordFreq,
+                    '双词': row.twoWord,
+                    '双词频率': row.twoWordFreq,
+                    '三词': row.threeWord,
+                    '三词频率': row.threeWordFreq
+                })));
+
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, '词频分析');
+                XLSX.writeFile(workbook, '词频分析结果.xlsx');
+            });
+        }
+    </script>
+</body>
+</html>

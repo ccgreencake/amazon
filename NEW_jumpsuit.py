@@ -9,19 +9,33 @@ date_string = today.strftime("%Y/%m/%d")
 sku_date=today.strftime("%Y%m%d")
 
 # 读取源表格文件
-source_file = r'C:\Users\123\Desktop\product\240424\product_09.xls'  # 替换为实际的源文件路径
+source_file = r'C:\Users\123\Desktop\product\240603\product_04.xls'  # 替换为实际的源文件路径
 df_source = pd.read_excel(source_file)
 
 
 source_file2 = r'C:\Users\123\Desktop\new 词表.xlsx'  # 替换为实际的源文件路径
-df_source2 = pd.read_excel(source_file2, sheet_name='jumpsuit')
+df_source2 = pd.read_excel(source_file2, sheet_name='romper')
 
 #提取埋词
 word = df_source2.iloc[0:, 0]
-point5 = df_source2.iloc[0:, 1]
+point5 = df_source2.iloc[0:, 2]
 
-price='19.99'
-list_price='19.99'
+account = "li"
+TG_VP = 'T'
+TG_VP = 'V'
+TG_VP = ''
+price = '9.99'
+shipping = '0'
+if (float(price)<=15):
+    list_price = float(price)+10
+else:
+    list_price = price
+
+if (account == "li"):
+    color_prefix = "A"
+    manufacturer = "Bakgeerle"
+else:
+    color_prefix = "B"
 
 # 获取表格文件的名称
 file_name = os.path.basename(source_file)
@@ -34,7 +48,8 @@ new_string = table_name[len(prefix):]
 sku_old = df_source.iloc[0:, 0]
 
 sku = []
-prefix = "li"+sku_date+new_string
+prefix = TG_VP+account+sku_date+new_string
+# prefix = "li"+sku_date+new_string
 
 for string in sku_old:
     new_string = prefix + str(string)
@@ -89,7 +104,7 @@ final_img = df_source.iloc[0:,13]
 df_new = pd.DataFrame()
 string = title[0]
 length = len(sku)  # 填充的长度
-feed_product = utils.feed_product(string)
+feed_product = 'onepieceoutfit'
 
 df_new['Column1'] = [feed_product] * length
 
@@ -156,15 +171,32 @@ df_new['p4'] = [p5[3]]*length
 
 product_description = utils.description("html.txt", size_chart, part1, part2, part3)
 
-n = 1
+num = length*17
+print("共需要",num,"个词")
+print("词表长度为",len(word))
+if num > len(word):
+    print("词表不够，进行自动扩充")
+while num > len(word):
+    word = pd.concat([word, word], ignore_index=True)
+    print("词表扩充中...")
+    if num < len(word):
+        word = word[:num]
+        print("词表扩充完毕")
+        break
+    else:
+        continue
+
 for i in range(17):
-    word_name = 'word'+str(n)
-    df_new[word_name] = [word[n]] * length
-    n=n+1
+    array_name = f"Array{i+1}"  # 创建数组名称
+    start_index = i * length  # 计算起始索引
+    end_index = (i + 1) * length  # 计算结束索引
+    array_data = word[start_index:end_index].reset_index(drop=True)  # 提取32个元素并重置索引
+    df_new[array_name] = array_data  # 将数据填充到新的数据框架的不同列中
+
 df_new['product_description'] = product_description
 print('大描述长度：'+str(len(product_description)))
 
-item_type = utils.item_type(string,feed_product)
+item_type = 'rompers-apparel'
 df_new['item_type'] = [item_type] * length
 
 df_new['price'] = [price] * length  # 后续要去除第一行
@@ -179,6 +211,8 @@ df_new['size'] = size
 df_new['body_type'] = ['Regular'] * length
 df_new['height_type'] = ['Regular'] * length
 df_new['main_img'] = main_img
+main_img_main = df_source.iloc[0, 9]
+df_new.loc[:6, 'main_img'] = main_img_main
 df_new['img_1'] = img_1
 df_new['img_2'] = img_2
 df_new['img_3'] = img_3

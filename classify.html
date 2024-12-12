@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>类目分类工具1.0</title>
+  <style>
+    body {
+      font-family: 'Open Sans', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    h1 {
+      margin: 20px 0;
+      color: #5c67f2;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      margin-top: 30px;
+    }
+    .input-area {
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 20px;
+    }
+    .input-area input, .input-area textarea, .input-area button {
+      margin: 15px 0;
+      padding: 12px 20px;
+      width: 100%;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .input-area button {
+      background-color: #5c67f2;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .input-area button:hover {
+      background-color: #4a54e1;
+    }
+    #downloadLink {
+      display: block;
+      margin-top: 20px;
+      font-size: 16px;
+      color: #5c67f2;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    #downloadLink:hover {
+      color: #4a54e1;
+    }
+    .result-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>类目分类工具1.0</h1>
+  <div class="container">
+    <div class="input-area">
+      <input type="file" id="fileInput" accept=".xlsx">
+      <textarea id="categoriesInput" rows="5" placeholder="请输入分类关键词，用逗号分隔"></textarea>
+      <button id="processButton">开始分类</button>
+    </div>
+    <div class="result-container" id="downloadContainer">
+      <a id="downloadLink" style="display: none;">点击下载分类后的表格</a>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    document.getElementById("processButton").addEventListener("click", async () => {
+      const fileInput = document.getElementById("fileInput");
+      const categoriesInput = document.getElementById("categoriesInput");
+      const downloadLink = document.getElementById("downloadLink");
+      const downloadContainer = document.getElementById("downloadContainer");
+
+      // 检查是否上传了文件并输入了分类
+      if (!fileInput.files.length) {
+        alert("请上传一个 Excel 文件！");
+        return;
+      }
+      if (!categoriesInput.value.trim()) {
+        alert("请填写分类关键词！");
+        return;
+      }
+
+      // 读取用户输入的分类关键词
+      const categories = categoriesInput.value.split(",").map(c => c.trim().toLowerCase());
+      categories.push("其他"); // 添加默认分类列
+
+      // 读取 Excel 文件
+      const file = fileInput.files[0];
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const sheetName = workbook.SheetNames[0]; // 默认读取第一个工作表
+      const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+
+      // 如果表格为空
+      if (!sheetData.length) {
+        alert("表格内容为空！");
+        return;
+      }
+
+      // 初始化分类结果
+      const result = {};
+      categories.forEach(category => {
+        result[category] = [];
+      });
+
+      // 遍历首列数据进行分类
+      const firstColumn = sheetData.map(row => row[0]); // 获取首列数据
+      firstColumn.forEach(cell => {
+        if (cell === undefined || cell === null) return;
+
+        const cellLower = String(cell).toLowerCase();
+        let matched = false;
+
+        // 检查每个分类关键词
+        for (const category of categories) {
+          if (category !== "其他" && cellLower.includes(category)) {
+            result[category].push(cell);
+            matched = true;
+            break;
+          }
+        }
+
+        // 如果没有匹配的分类，将其放入 "其他"
+        if (!matched) {
+          result["其他"].push(cell);
+        }
+      });
+
+      // 构造新的表格数据
+      const outputData = [];
+      const maxRows = Math.max(...Object.values(result).map(arr => arr.length));
+      for (let i = 0; i < maxRows; i++) {
+        const row = categories.map(category => result[category][i] || ""); // 填充空白
+        outputData.push(row);
+      }
+
+      // 将分类结果转换为工作表
+      const newSheet = XLSX.utils.aoa_to_sheet([categories, ...outputData]);
+
+      // 创建新的工作簿并导出
+      const newWorkbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(newWorkbook, newSheet, "分类结果");
+      const wbout = XLSX.write(newWorkbook, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([wbout], { type: "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+
+      // 显示下载链接
+      downloadLink.href = url;
+      downloadLink.download = "classified.xlsx";
+      downloadLink.style.display = "inline";
+      downloadLink.textContent = "点击下载分类后的表格";
+      downloadContainer.style.display = "block"; // 显示下载容器
+    });
+  </script>
+</body>
+</html>

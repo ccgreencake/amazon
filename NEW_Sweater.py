@@ -3,36 +3,38 @@ import os
 import numpy as np
 from datetime import date
 import utils
-
 today = date.today()
 date_string = today.strftime("%Y/%m/%d")
 sku_date=today.strftime("%Y%m%d")
-
 # 读取源表格文件
-source_file = r'C:\Users\123\Desktop\product\240606\product_04.xls'  # 替换为实际的源文件路径
+source_file = r'C:\Users\123\Desktop\product\240603\product_02.xls'  # 替换为实际的源文件路径
 df_source = pd.read_excel(source_file)
-
-
-source_file2 = r'C:\Users\123\Desktop\new 词表.xlsx'  # 替换为实际的源文件路径
-df_source2 = pd.read_excel(source_file2, sheet_name='short_dress')
-
-#提取埋词
-word = df_source2.iloc[0:, 0]
-point5 = df_source2.iloc[0:, 2]
+source_file2 = r'C:\Users\123\Desktop\SHIRT词表.xlsx'  # 替换为实际的源文件路径
 account = "li"
 TG_VP = 'T'
-TG_VP = 'V'
-# TG_VP = ''
-price='21.99'
+# TG_VP = 'V'
+TG_VP = ''
+price = '19.99'
+shipping = '0'
 if (float(price)<=15):
     list_price = float(price)+10
 else:
     list_price = price
-shipping = '0'
+
 if (account == "li"):
     color_prefix = "A"
+    manufacturer = "Bakgeerle"
 else:
     color_prefix = "B"
+
+df_source2 = pd.read_excel(source_file2, sheet_name='cardigan')
+
+#提取埋词
+word = df_source2.iloc[0:, 0]
+word = word.dropna()
+point5 = df_source2.iloc[0:, 2]
+
+
 
 # 获取表格文件的名称
 file_name = os.path.basename(source_file)
@@ -53,11 +55,14 @@ for string in sku_old:
 
 # 提取title
 title = df_source.iloc[0:, 2]
+string = title[0]
+rise = utils.rise(string)
 
 
 # 提取color
 colors = df_source.iloc[0:, 4]
 n=0
+
 new_color = []
 count  = 1
 flag = 1
@@ -75,13 +80,12 @@ for i in range(len(colors)):
 # 提取size
 size = df_source.iloc[0:, 5]
 print('count:',count)
-# 提取size
-size = df_source.iloc[0:, 5]
-# # 提取价格
+new_color = colors
+# 提取价格
 # price_str = df_source.iloc[0:, 7]
 # price = []
 # list_price=[]
-#
+
 # for string in price_str:
 #     start_index = string.find("*US灵境：") + len("*US灵境：")
 #     end_index = string.find(" USD  *US顺丰")
@@ -93,7 +97,7 @@ size = df_source.iloc[0:, 5]
 #     price.append(formatted_string)
 #     list_price.append(formatted_string1)
 
-
+#提取图片
 main_img = df_source.iloc[0:,11]
 main_img_main = df_source.iloc[0, 9]
 img_1 = df_source.iloc[0:,9]
@@ -104,11 +108,13 @@ img_5 = df_source.iloc[0:,21]
 img_6 = df_source.iloc[0:,23]
 img_7 = df_source.iloc[0:,25]
 final_img = df_source.iloc[0:,13]
+
 # 创建新的数据框架
 df_new = pd.DataFrame()
-string = title[0]
+
 length = len(sku)  # 填充的长度
-feed_product = 'dress'
+string = title[0]
+feed_product = 'sweater'
 
 df_new['Column1'] = [feed_product] * length
 
@@ -118,13 +124,59 @@ df_new['Column2'] = sku
 df_new['brand'] = ['Bakgeerle'] * length
 df_new['update'] = ['Update'] * length
 colors[0] = np.nan
-new_title = [str(f_title) + ' ' + str(color) if i > 0 else f_title for i, (f_title, color) in enumerate(zip(title, colors))]
+# new_title = [str(f_title) + ' ' + str(color) if i > 0 else f_title for i, (f_title, color) in enumerate(zip(title, colors))]
+new_title = title
+for i in new_title:
+    if len(i) > 200:
+        print("第",i,"个标题长度超过200字符!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        break
 df_new['item_name'] = new_title
 
-df_new['style_name'] = np.nan
-df_new['pattern_name'] = np.nan
+df_new['belt_style']=['Medium']* length
+df_new['control_type']=['Medium']* length
 
+df_new['country_as_labeled']=['China'] * length
+df_new['pattern_type']=['solid']* length
+df_new['pocket_description']=['Utility Pocket']* length
+df_new['sleeve_type']=['Short Sleeve']* length
+df_new['water_resistance_level']=['not_water_resistant'] * length
+df_new['is_autographed'] = ['No'] * length
+df_new['department'] = ['Women'] * length
+df_new.loc[0, 'department'] = np.nan
+df_new['fit_type'] = ['Regular'] * length
+df_new.loc[0, 'fit_type'] = np.nan
+df_new['top_style']=np.nan
+df_new['neck_style']=['V-Neck']* length
+
+
+# df_new['lifestyle']=['Casual']* length
+# df_new['lifecycle_supply_type']=['Year Round Replenishable'] * length
+
+df_new['item_weight_unit_of_measure']=['GR']* length
+weight = df_source.iloc[0:, 6]
+df_new['item_weight']=weight
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# df_new['length'] = ['regular']*length
+# key = title[1] + ' ' + word[1]+' ' +  word[2]+' ' +  word[3]
 df_new['key'] = np.nan
+df_new['manufacturer'] = [manufacturer] * length
+df_new['model'] = np.nan
+df_new['model_name'] = np.nan
+
+# print('key:'+str(len(key)))
 
 
 
@@ -143,18 +195,29 @@ for i in range(4):
 
 df_new['p1'] = [p5[0]]*length
 df_new['p2'] = [p5[1]]*length
-if feed_product == 'shorts':
+if feed_product == 'pants':
+    df_new['p3'] = [p5[2]]*length
+else:
     if 'Linen' in string:
         df_new['p3'] = ['55%linen, 45%cotton'] * length
     else:
         df_new['p3'] = ['71%Polyester,18%Cotton,11%Spandex']*length
-else:
-    df_new['p3'] = [p5[2]] * length
 df_new['p4'] = [p5[3]]*length
 
 product_description = utils.description("html.txt", size_chart, part1, part2, part3)
 
-num = length*16
+
+
+
+
+
+# n = 1
+# for i in range(24):
+#     # word_name = 'word'+str(n)
+#     # df_new[word_name] = [word[n]] * length
+#     df_new['short bury'+str(i)] = np.nan
+#     n=n+1
+num = length*13
 print("共需要",num,"个词")
 print("词表长度为",len(word))
 if num > len(word):
@@ -169,7 +232,7 @@ while num > len(word):
     else:
         continue
 
-for i in range(16):
+for i in range(13):
     array_name = f"Array{i+1}"  # 创建数组名称
     start_index = i * length  # 计算起始索引
     end_index = (i + 1) * length  # 计算结束索引
@@ -177,13 +240,22 @@ for i in range(16):
     df_new[array_name] = array_data  # 将数据填充到新的数据框架的不同列中
 
 
+
+
+
+
+
 df_new['product_description'] = product_description
 print('大描述长度：'+str(len(product_description)))
 
-item_type = 'dresses'
+if len(product_description) > 2000:
+    print("大描述超过2000字符!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+
+item_type = 'cardigan-sweaters'
 df_new['item_type'] = [item_type] * length
 
-df_new['price'] = [price] * length  # 后续要去除第一行
+df_new['price'] = [price] * length# 后续要去除第一行
 df_new['quantity'] = ['500'] * length
 df_new['gender'] = ['Female'] * length
 df_new['age'] = ['Adult'] * length
@@ -195,7 +267,7 @@ df_new['size'] = size
 df_new['body_type'] = ['Regular'] * length
 df_new['height_type'] = ['Regular'] * length
 df_new['main_img'] = main_img
-df_new.loc[:float(count), 'main_img'] = main_img_main
+df_new.loc[:6, 'main_img'] = main_img_main
 df_new['img_1'] = img_1
 df_new['img_2'] = img_2
 df_new['img_3'] = img_3
@@ -222,15 +294,11 @@ for i in range(5):
 
 
 df_new['color'] = new_color
-df_new['color_map'] = new_color
+df_new['color_map'] = colors
 df_new.loc[0, ['color', 'color_map']] = np.nan
 
 
 
-df_new['department'] = ['Women'] * length
-df_new.loc[0, 'department'] = np.nan
-df_new['fit_type'] = ['Regular'] * length
-df_new.loc[0, 'fit_type'] = np.nan
 
 
 
@@ -238,15 +306,17 @@ df_new.loc[0, 'fit_type'] = np.nan
 
 
 
-df_new['is_autographed'] = ['No'] * length
-df_new.loc[0, 'is_autographed'] = np.nan
+
+
+
+
 
 
 
 
 
 # 创建一个新的数组，将修改后的字符串存储其中
-size_map = [str(string).replace("2X", "XX").replace("3X", "XXX").replace("4X", "XXXX").replace("5X", "XXXXX") for string in size]
+size_map = [str(string).replace("2X", "XX").replace("3X", "XXX").replace("4X", "XXXX").replace("5X", "XXXXX").replace("6X", "XXXXXX") for string in size]
 
 df_new['size_map'] = size_map
 df_new.loc[0, 'size_map'] = np.nan
@@ -270,4 +340,4 @@ output_filename = os.path.splitext(os.path.basename(source_file))[0] + '.xlsx'
 output_file = os.path.join(output_filename)
 df_new.to_excel(output_file, index=False)
 
-print("新的目标表格已保存。")
+print("新的目标表格已保存。",output_filename)
