@@ -33,7 +33,7 @@ zuhe = 0
 
 
 account = "LIANG"
-account = "YOULE"
+# account = "YOULE"
 # account = "lc"
 
 TG_VP = 'T'
@@ -44,7 +44,12 @@ TG_VP = 'T'
 color_number = 0
 #正常上架
 # color_number = 10
-number = "0"+str(color_number+1)
+num = color_number+1
+if num < 10:
+    number = "0"+str(num)
+else:
+    number = str(num)
+# number = 10
 price = '44.99'
 shipping = '0'
 style = 'Casual'
@@ -59,17 +64,25 @@ style = 'Casual'
 # leixing = 'sweater'
 
 
-# CiBiao = 'weiku'
-# leixing = 'pants'
+CiBiao = 'test'
+leixing = 'pants'
 
-CiBiao = 'men tactical hoodie'
-leixing = 'sweatshirt'
+# CiBiao = 'men tactical hoodie'
+# leixing = 'sweatshirt'
 
-# CiBiao = 'men corduroy shirt'
+# CiBiao = 'men linen shirt'
 # leixing = 'shirt'
 
-# CiBiao = 'plaid skirt'
+# CiBiao = 'tennis_skirt'
 # leixing = 'skirt'
+
+
+# CiBiao = "men tactical shorts"
+# leixing = "shorts"
+#
+# CiBiao = 't shirt dress'
+# leixing = 'dress'
+
 
 
 # 获取当前日期并格式化为YYYYMMDD的格式

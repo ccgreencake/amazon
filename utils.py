@@ -4,6 +4,10 @@ from openpyxl import load_workbook
 import os
 import subprocess
 import numpy as np
+
+from 复制 import copyfile3
+
+
 def description(file_path,size_chart,p5):
     # 打开文本文件进行读取
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -44,8 +48,8 @@ def description(file_path,size_chart,p5):
         # # 查找第二个 <p></p>  的位置
         # third_p = file_content.find("<p></p>", second_p + 1)
 
-        for n in range(3, 0, -1):
-            product_description = '<p><strong>' + part[n][0] + '</strong></p>'+'<p>' + part[n][1] + '</p>' + product_description
+        for n in range(2, -1, -1):
+             product_description = '<p><strong>' + part[n][0] + '</strong></p>'+'<p>' + part[n][1] + '</p>' + product_description
 
         product_description = product_description + file_content
         return product_description
@@ -109,6 +113,15 @@ def rise(string):
         rise = 'mid'
     return rise
 
+def riseDE(string):
+    if "High" in string:
+        rise = 'Hohe Taille'
+    elif "Low" in string:
+        rise = 'Niedrige Taille'
+    else:
+        rise = 'MittlereTaille'
+    return rise
+
 def item_type(string,feed_product):
     if feed_product == 'pants':
         if "Dress" in string:
@@ -158,38 +171,188 @@ def leg_style(string):
         leg_style = 'Wide'
     return leg_style
 
-def copy_file(file_b_path, file_a_path):
-    # 使用pandas读取文件A的Sheet1
-    df_a = pd.read_excel(file_a_path, engine='openpyxl')
+def copy_file(file_b_path, file_a_path,flag,no,account):
+    if account == "YOULE":
+        path = 'yo总模板.xlsx'
+    elif account == "LIANG":
+        path = 'li总模板.xlsx'
+    elif account == "SANSK":
+        path = 'san模板.xlsx'
+    elif account == "SIYAT":
+        path = 'si模板.xlsx'
+    if not os.path.exists(file_b_path):
+        copyfile3(no,account,path)  # 文件不存在，调用方法
+    else:
+        print("文件存在，跳过。")
 
-    # 使用openpyxl加载文件B
-    wb = load_workbook(file_b_path)
-    ws = wb['Template'] if 'Template' in wb.sheetnames else wb.create_sheet('Template')
+    if flag == 'P':
+        # 使用pandas读取文件A的Sheet1
+        merged_df = pd.DataFrame()
+        for i in range(len(file_a_path)):
+            df = pd.read_excel(file_a_path[i], engine='openpyxl')
+            merged_df = pd.concat([merged_df, df], ignore_index=True)
 
-    # 设置从第四行开始的所有行的行高为20磅
-    for row in range(4, ws.max_row + 1):
-        ws.row_dimensions[row].height = 20
+        df_a = merged_df
+        # 使用openpyxl加载文件B
+        wb = load_workbook(file_b_path)
+        ws = wb['Template'] if 'Template' in wb.sheetnames else wb.create_sheet('Template')
 
-    # 读取数据到列表
-    data = df_a.values.tolist()
+        # 设置从第四行开始的所有行的行高为20磅
+        for row in range(4, ws.max_row + 1):
+            ws.row_dimensions[row].height = 20
 
-    # 从第四行开始写入数据
-    for row_num, row_data in enumerate(data, start=1):  # 从第一行开始写入，因为已经从第四行设置了行高
-        for col_num, value in enumerate(row_data, start=1):
-            ws.cell(row=row_num + 3, column=col_num, value=value)  # 加3是因为我们从第四行开始设置行高
+        # 读取数据到列表
+        data = df_a.values.tolist()
 
-    # 保存工作簿
-    wb.save(file_b_path)
-    try:
-        os.remove(file_a_path)
-        print(f"文件 '{file_a_path}' 已被删除。")
-    except OSError as e:
-        print(f"删除文件时出错: {e}")
-    # 检查操作系统并使用WPS打开文件B
-    if os.name == 'nt':  # Windows系统
-        # 假设WPS的路径是 "C:\Program Files\WPS Office\et.exe"
-        wps_path = r'C:\Users\123\AppData\Local\Kingsoft\WPS Office\ksolaunch.exe'
-        # 使用WPS打开Excel文件
-        subprocess.call([wps_path, file_b_path])
+        # 从第四行开始写入数据
+        for row_num, row_data in enumerate(data, start=1):  # 从第一行开始写入，因为已经从第四行设置了行高
+            for col_num, value in enumerate(row_data, start=1):
+                ws.cell(row=row_num + 3, column=col_num, value=value)  # 加3是因为我们从第四行开始设置行高
 
-    print(f"文件 '{file_b_path}' 已使用WPS打开。")
+        # 保存工作簿
+        wb.save(file_b_path)
+        for i in range(len(file_a_path)):
+            try:
+                os.remove(file_a_path[i])
+                print(f"文件 '{file_a_path[i]}' 已被删除。")
+            except OSError as e:
+                print(f"删除文件时出错: {e}")
+
+
+        # 检查操作系统并使用WPS打开文件B
+        if os.name == 'nt':  # Windows系统
+            # 假设WPS的路径是 "C:\Program Files\WPS Office\et.exe"
+            wps_path = r'F:\APP\wps\WPS Office\ksolaunch.exe'
+            # 使用WPS打开Excel文件
+            subprocess.call([wps_path, file_b_path])
+
+        print(f"文件 '{file_b_path}' 已使用WPS打开。")
+    else:
+        df_a = pd.read_excel(file_a_path, engine='openpyxl')
+
+        # 使用openpyxl加载文件B
+        wb = load_workbook(file_b_path)
+        ws = wb['Template'] if 'Template' in wb.sheetnames else wb.create_sheet('Template')
+
+        # 设置从第四行开始的所有行的行高为20磅
+        for row in range(4, ws.max_row + 1):
+            ws.row_dimensions[row].height = 20
+
+        # 读取数据到列表
+        data = df_a.values.tolist()
+
+        # 从第四行开始写入数据
+        for row_num, row_data in enumerate(data, start=1):  # 从第一行开始写入，因为已经从第四行设置了行高
+            for col_num, value in enumerate(row_data, start=1):
+                ws.cell(row=row_num + 3, column=col_num, value=value)  # 加3是因为我们从第四行开始设置行高
+
+        # 保存工作簿
+        wb.save(file_b_path)
+        try:
+            os.remove(file_a_path)
+            print(f"文件 '{file_a_path}' 已被删除。")
+        except OSError as e:
+            print(f"删除文件时出错: {e}")
+
+        # 检查操作系统并使用WPS打开文件B
+        if os.name == 'nt':  # Windows系统
+            # 假设WPS的路径是 "C:\Program Files\WPS Office\et.exe"
+            wps_path = r'F:\APP\wps\WPS Office\ksolaunch.exe'
+            # 使用WPS打开Excel文件
+            subprocess.call([wps_path, file_b_path])
+
+        print(f"文件 '{file_b_path}' 已使用WPS打开。")
+
+
+def copy_fileDE(file_b_path, file_a_path,flag,no,account):
+    # 创建文件
+    if account == "YOULE":
+        path = 'yo总模板.xlsx'
+    elif account == "LIANG":
+        path = 'li总模板.xlsx'
+    elif account == "SANSK":
+        path = 'san模板.xlsx'
+    elif account == "SIYAT":
+        path = 'si模板.xlsx'
+    if not os.path.exists(file_b_path):
+        copyfile3(no,account,path)  # 文件不存在，调用方法
+    else:
+        print("文件存在，跳过。")
+
+    if flag == 'P':
+        # 使用pandas读取文件A的Sheet1
+        merged_df = pd.DataFrame()
+        for i in range(len(file_a_path)):
+            df = pd.read_excel(file_a_path[i], engine='openpyxl')
+            merged_df = pd.concat([merged_df, df], ignore_index=True)
+
+        df_a = merged_df
+        # 使用openpyxl加载文件B
+        wb = load_workbook(file_b_path)
+        ws = wb['Vorlage'] if 'Vorlage' in wb.sheetnames else wb.create_sheet('Vorlage')
+
+        # 设置从第四行开始的所有行的行高为20磅
+        for row in range(4, ws.max_row + 1):
+            ws.row_dimensions[row].height = 20
+
+        # 读取数据到列表
+        data = df_a.values.tolist()
+
+        # 从第四行开始写入数据
+        for row_num, row_data in enumerate(data, start=1):  # 从第一行开始写入，因为已经从第四行设置了行高
+            for col_num, value in enumerate(row_data, start=1):
+                ws.cell(row=row_num + 3, column=col_num, value=value)  # 加3是因为我们从第四行开始设置行高
+
+        # 保存工作簿
+        wb.save(file_b_path)
+        for i in range(len(file_a_path)):
+            try:
+                os.remove(file_a_path[i])
+                print(f"文件 '{file_a_path[i]}' 已被删除。")
+            except OSError as e:
+                print(f"删除文件时出错: {e}")
+
+
+        # 检查操作系统并使用WPS打开文件B
+        if os.name == 'nt':  # Windows系统
+            # 假设WPS的路径是 "C:\Program Files\WPS Office\et.exe"
+            wps_path = r'F:\APP\wps\WPS Office\ksolaunch.exe'
+            # 使用WPS打开Excel文件
+            subprocess.call([wps_path, file_b_path])
+
+        print(f"文件 '{file_b_path}' 已使用WPS打开。")
+    else:
+        df_a = pd.read_excel(file_a_path, engine='openpyxl')
+
+        # 使用openpyxl加载文件B
+        wb = load_workbook(file_b_path)
+        ws = wb['Vorlage'] if 'Vorlage' in wb.sheetnames else wb.create_sheet('Vorlage')
+
+        # 设置从第四行开始的所有行的行高为20磅
+        for row in range(4, ws.max_row + 1):
+            ws.row_dimensions[row].height = 20
+
+        # 读取数据到列表
+        data = df_a.values.tolist()
+
+        # 从第四行开始写入数据
+        for row_num, row_data in enumerate(data, start=1):  # 从第一行开始写入，因为已经从第四行设置了行高
+            for col_num, value in enumerate(row_data, start=1):
+                ws.cell(row=row_num + 3, column=col_num, value=value)  # 加3是因为我们从第四行开始设置行高
+
+        # 保存工作簿
+        wb.save(file_b_path)
+        try:
+            os.remove(file_a_path)
+            print(f"文件 '{file_a_path}' 已被删除。")
+        except OSError as e:
+            print(f"删除文件时出错: {e}")
+
+        # 检查操作系统并使用WPS打开文件B
+        if os.name == 'nt':  # Windows系统
+            # 假设WPS的路径是 "C:\Program Files\WPS Office\et.exe"
+            wps_path = r'F:\APP\wps\WPS Office\ksolaunch.exe'
+            # 使用WPS打开Excel文件
+            subprocess.call([wps_path, file_b_path])
+
+        print(f"文件 '{file_b_path}' 已使用WPS打开。")

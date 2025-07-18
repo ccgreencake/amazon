@@ -4,7 +4,7 @@ from openpyxl import load_workbook
 from datetime import date
 
 # 文件夹路径
-folder_path = "C:\\Users\\123\\Desktop\\241210"
+folder_path = "C:\\Users\\Administrator\\Desktop\\250717"
 
 # 获取今天的日期
 today = date.today()
@@ -13,7 +13,7 @@ date_str = today.strftime("%Y%m%d")
 folder_name = os.path.basename(folder_path)
 print(folder_name)
 # 新建 .xlsx 文件路径
-xlsx_file_path = f"C:\\Users\\123\\Desktop\\upload_sku\\sku{folder_name}.xlsx"
+xlsx_file_path = f"C:\\Users\\Administrator\\Desktop\\upload_sku\\sku{folder_name}.xlsx"
 
 # 创建一个新的 Workbook 对象
 wb_dest = Workbook()
@@ -44,7 +44,10 @@ for filename in os.listdir(folder_path):
         wb_src = load_workbook(filename=file_path, read_only=True)
 
         # 选择工作表
-        ws_src = wb_src['Template']
+        if "sa" in filename:
+            ws_src = wb_src['Vorlage']
+        else:
+            ws_src = wb_src['Template']
 
         # 遍历 .xlsm 文件中的第二列（从第四行开始）
         for row in ws_src.iter_rows(min_row=4, max_col=2, values_only=True):
@@ -52,7 +55,7 @@ for filename in os.listdir(folder_path):
             if row and row[1] is not None:
                 sku = row[1]
                 original_data.append(sku)  # 保存修改前的数据
-                if sku.startswith('V') or sku.startswith('T') or sku.startswith('C') or sku.startswith('Z'):
+                if sku.startswith('V') or sku.startswith('T') or sku.startswith('C') or sku.startswith('Z') or sku.startswith('P'):
                     sku = sku[20:]
                 elif sku.startswith('li') or sku.startswith('yo') or sku.startswith('lc'):
                     sku = sku[10:]

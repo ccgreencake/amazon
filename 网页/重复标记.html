@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Excel 重复标记处理</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <h2>Excel 重复项标记处理</h2>
+
+  <input type="file" id="upload" accept=".xlsx, .xls" />
+  <button onclick="processExcel()">处理并下载</button>
+
+  <script>
+    let workbook; // 存储原始 Excel 文件数据
+
+    // 上传文件
+    document.getElementById('upload').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        workbook = XLSX.read(data, { type: 'array' });
+        alert("上传成功！");
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+
+    // 处理并下载
+    function processExcel() {
+      if (!workbook) {
+        alert("请先上传文件！");
+        return;
+      }
+
+      const sheetName = workbook.SheetNames[0]; // 取第一个 sheet
+      const sheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // 转成二维数组
+
+      const counter = {}; // 记录出现次数
+
+      for (let i = 0; i < data.length; i++) {
+        const value = data[i][0]; // 第1列
+        if (value === undefined || value === "") continue;
+
+        counter[value] = (counter[value] || 0) + 1;
+        data[i][0] = `${value}#${counter[value]}`;
+      }
+
+      const newSheet = XLSX.utils.aoa_to_sheet(data);
+      const newWorkbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(newWorkbook, newSheet, "Processed");
+
+      XLSX.writeFile(newWorkbook, "processed.xlsx");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>专业表格图片生成器</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(120deg, #b5fffc 0%, #88d3ce 100%);
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      box-sizing: border-box;
+      max-width: 1000px;
+      width: 98vw;
+      margin: 3.5rem auto 2.5rem auto;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 20px;
+      box-shadow: 0 16px 38px 0 rgba(44, 62, 80, 0.14),
+        0 1.5px 12px 0 rgba(44, 62, 80, 0.02);
+      padding: 2.8rem 2.2rem 2.2rem 2.2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      backdrop-filter: blur(7px);
+      position: relative;
+    }
+
+    h2 {
+      color: #10556d;
+      font-size: 2.1rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-align: left;
+      margin-bottom: 1.35rem;
+      margin-top: 0.3rem;
+      width: 100%;
+      position: relative;
+      padding-bottom: 0.6rem;
+      user-select: none;
+    }
+
+    h2::before {
+      content: '';
+      display: block;
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 72px;
+      height: 4px;
+      border-radius: 2px 2px 0 0;
+      background: linear-gradient(90deg, #3eb5db 0%, #4dde9f 100%);
+      opacity: 0.8;
+    }
+
+    #canvas-size-options {
+      margin-bottom: 1rem;
+      text-align: left;
+      width: 100%;
+      font-size: 1.07rem;
+      color: #29868b;
+      background: rgba(207, 247, 244, 0.36);
+      border-radius: 7px;
+      padding: 0.39em 1.1em;
+      box-sizing: border-box;
+      font-weight: 500;
+    }
+    #canvas-size-options label {
+      margin-right: 1.7em;
+      cursor: pointer;
+      user-select: none;
+    }
+    #canvas-size-options input[type='radio'] {
+      vertical-align: middle;
+      accent-color: #3eb5db;
+    }
+
+    /* 新增德语选项样式 */
+    #lang-options {
+      width: 100%;
+      margin-bottom: 0.7rem;
+      text-align: left;
+      font-size: 1.04rem;
+      color: #256a62;
+      background: rgba(207,247,244,0.27);
+      border-radius: 7px;
+      padding: 0.20em 1.1em 0.18em 1.1em;
+      box-sizing: border-box;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 1.3em;
+    }
+    #lang-options label {
+      cursor: pointer;
+      user-select: none;
+    }
+    #lang-options input[type='checkbox'] {
+      accent-color: #16a085;
+      vertical-align: middle;
+      margin-right: 0.3em;
+    }
+
+    textarea {
+      width: 100%;
+      max-width: 730px;
+      height: 144px;
+      font-family: 'Consolas', monospace;
+      font-size: 17px;
+      padding: 1.1rem 1rem 1rem 1.7rem;
+      border: 2px solid #baebea;
+      border-radius: 14px;
+      background: #f7fcfc;
+      box-shadow: 0 2px 18px rgba(64, 192, 192, 0.07);
+      outline: none;
+      transition: border 0.17s, box-shadow 0.22s;
+      margin-bottom: 1rem;
+      color: #30525f;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      border: 2.5px solid #21bfae;
+      box-shadow: 0 4px 20px rgba(34, 193, 195, 0.14);
+    }
+
+    #controls {
+      margin: 1.5rem 0 1.7rem 0;
+      display: flex;
+      gap: 1.1rem;
+      justify-content: flex-start;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.75rem 2.1rem 0.75rem 1.5rem;
+      border: none;
+      border-radius: 32px;
+      font-size: 1.08rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.23s cubic-bezier(0.7, 0.2, 0.1, 1.0);
+      letter-spacing: 1.4px;
+      background: linear-gradient(90deg, #3eb5db 0%, #50dbbe 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(63, 188, 187, 0.08);
+      display: flex;
+      align-items: center;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #22a4b8 0%, #44c59e 100%);
+      box-shadow: 0 6px 24px rgba(34, 193, 195, 0.12);
+      transform: translateY(-3px) scale(1.035);
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    button:disabled {
+      opacity: 0.71;
+      background: linear-gradient(90deg, #adb5bd 0%, #bccfcc 100%);
+      cursor: not-allowed;
+    }
+    button#btnDownload {
+      background: linear-gradient(90deg, #49d688 0%, #23c491 100%);
+      box-shadow: 0 4px 14px rgba(72, 214, 136, 0.09);
+    }
+    button#btnDownload:hover {
+      filter: brightness(1.09) saturate(1.1);
+    }
+    button#btnCopy {
+      background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+      box-shadow: 0 4px 14px rgba(243, 156, 18, 0.09);
+    }
+    button#btnCopy:hover {
+      filter: brightness(1.09) saturate(1.1);
+    }
+    button .fa {
+      margin-right: 11px;
+      font-size: 1.14em;
+    }
+
+    canvas {
+      margin-top: 0.5rem;
+      max-width: 100%;
+      width: 99%;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 6px 27px 0 rgba(102, 190, 205, 0.09),
+        0 1.5px 12px 0 rgba(130, 250, 210, 0.04);
+      border: 3.5px solid #e7fdfa;
+      display: block;
+      outline: none;
+      transition: box-shadow 0.22s;
+    }
+
+    #copyToast {
+      visibility: hidden;
+      min-width: 220px;
+      background-color: rgba(39, 174, 96, 0.95);
+      color: white;
+      text-align: center;
+      border-radius: 12px;
+      padding: 18px;
+      position: fixed;
+      z-index: 1000;
+      left: 50%;
+      bottom: 50px;
+      transform: translateX(-50%);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      transition: opacity 0.5s, bottom 0.5s, visibility 0.5s;
+      display: flex;
+      align-items: center;
+      font-size: 17px;
+      font-weight: 500;
+      animation: pulse 2s infinite;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    #copyToast.show {
+      visibility: visible;
+      opacity: 1;
+      bottom: 70px;
+    }
+
+    #copyToast .toast-icon {
+      margin-right: 12px;
+      font-size: 24px;
+      animation: bounce 0.8s;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.6); }
+      70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-10px); }
+      50% { transform: translateY(0); }
+      70% { transform: translateY(-5px); }
+    }
+
+    @media (max-width: 1020px) {
+      .container {
+        padding: 1.2rem 0.3rem;
+      }
+      textarea {
+        font-size: 15.5px;
+        padding-left: 1.1rem;
+      }
+      #copyToast {
+        min-width: 180px;
+        padding: 14px;
+        font-size: 15px;
+      }
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 0.5rem 0.3rem 1rem 0.3rem;
+        border-radius: 0;
+        box-shadow: 0 4px 20px rgba(44, 62, 80, 0.12);
+      }
+      h2 {
+        font-size: 1.3rem;
+        padding-bottom: 0.4rem;
+      }
+      #canvas-size-options {
+        font-size: 0.98rem;
+        padding: 0.27em 0.7em;
+      }
+      #lang-options {
+        font-size: 0.95rem;
+        padding: 0.17em 0.6em;
+      }
+      textarea {
+        min-height: 96px;
+        font-size: 13.8px;
+      }
+      #controls button {
+        padding: 0.55rem 1.1rem 0.55rem 0.9rem;
+        font-size: 0.93rem;
+      }
+      canvas {
+        border-radius: 10px;
+      }
+      #copyToast {
+        min-width: 160px;
+        padding: 12px;
+        font-size: 14px;
+      }
+    }
+    @media (max-width: 520px) {
+      .container {
+        padding: 0.3rem 0.08rem 0.9rem 0.08rem;
+        min-width: unset;
+        width: 99vw;
+      }
+      #canvas-size-options {
+        padding: 0.2em 0.2em;
+        font-size: 0.94rem;
+      }
+      #lang-options {
+        font-size: 0.93rem;
+        padding: 0.13em 0.3em;
+      }
+      textarea {
+        padding-left: 0.8rem;
+      }
+      #controls {
+        gap: 0.4rem;
+      }
+      #copyToast {
+        min-width: 140px;
+        padding: 10px;
+        font-size: 13px;
+        bottom: 30px;
+      }
+      #copyToast.show {
+        bottom: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>专业表格图片生成器</h2>
+    <!-- 画布尺寸选项 -->
+    <div id="canvas-size-options">
+      <label>
+        <input type="radio" name="canvas-size" value="1600x1000" />
+        1600 x 1000
+      </label>
+      <label>
+        <input type="radio" name="canvas-size" value="original" checked />
+        2670 x 1375
+      </label>
+      <label>
+        <input type="radio" name="canvas-size" value="2900x1300" />
+        2900 x 1300
+      </label>
+    </div>
+    <!-- 新增德语选项 -->
+    <div id="lang-options">
+      <label>
+        <input type="checkbox" id="deLang" />
+        <span>德语表头</span>
+      </label>
+    </div>
+    <!-- 表格输入 -->
+    <textarea id="inputText">Size	Bust	Shoulder	Length
+M	110cm/43.31''	44cm/17.32''	76cm/29.92''
+L	118cm/46.46''	46cm/18.11''	78cm/30.71''
+XL	128cm/50.39''	49cm/19.29''	80.5cm/31.69''
+XXL	138cm/54.33''	52cm/20.47''	83cm/32.68''
+XXXL	148cm/58.27''	55cm/21.65''	85.5cm/33.66''</textarea>
+    <div id="controls">
+      <button id="btnRender"><i class="fa fa-magic"></i>生成图片</button>
+      <button id="btnDownload" disabled><i class="fa fa-download"></i>下载图片</button>
+      <button id="btnCopy" disabled title="复制图片到剪切板"><i class="fa fa-copy"></i>复制图片</button>
+    </div>
+    <canvas id="canvas" width="2670" height="1375"></canvas>
+  </div>
+
+  <!-- 复制成功提示元素 -->
+  <div id="copyToast">
+    <div class="toast-icon">✅</div>
+    <div>图片已复制到剪切板！</div>
+  </div>
+
+  <script>
+    // dom获取
+    const textarea = document.getElementById('inputText');
+    const btnRender = document.getElementById('btnRender');
+    const btnDownload = document.getElementById('btnDownload');
+    const btnCopy = document.getElementById('btnCopy');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const sizeRadios = document.getElementsByName('canvas-size');
+    const copyToast = document.getElementById('copyToast');
+    const deLangCheckbox = document.getElementById('deLang');
+
+    // 关键词德语映射表
+    const deDict = {
+      'size': 'Größe',
+      'waist': 'Taille',
+      'hip': 'Hüfte',
+      'length': 'Länge',
+      'bust': 'Brustumfang',
+      'shoulder': 'Schulter',
+      'sleeve': 'Ärmel',
+      'chest': 'Brust',
+      'thigh': 'Oberschenkel',
+      'bottoms': 'Hosen',
+      'height': 'Körpergröße',
+      'weight': 'Gewicht',
+      'shoulders': 'Schulter',
+      'hips': 'Hüfte',
+      'inseam': 'Innenbeinlänge',
+      'arm': 'Arm',
+      'leg': 'Bein',
+      'foot': 'Fuß',
+      'collar': 'Kragen',
+      'cuff': 'Manschette',
+      'hem': 'Saum',
+      'width': 'Breite',
+      'shoulder width': 'Schulterbreite',
+      'rise': 'Leibhöhe',
+      'outseam': 'Außenbeinlänge',
+      'underbust': 'Unterbrust',
+      's': 'S', 'm': 'M', 'l': 'L', 'xl': 'XL', 'xxl': 'XXL', 'xxxl': 'XXXL'
+      // 你可以继续补充其他常见表头
+    };
+
+    // 获取当前所选尺寸
+    function getSelectedSize() {
+      for (const radio of sizeRadios) {
+        if (radio.checked) {
+          if (radio.value === '1600x1000') return { w: 1600, h: 1000 };
+          else if (radio.value === '2900x1300') return { w: 2900, h: 1300 };
+          else return { w: 2670, h: 1375 };
+        }
+      }
+      return { w: 2670, h: 1375 };
+    }
+
+    // 英文表头翻译为德语
+    function translateHeaderToGerman(headerRow) {
+      // 只替换常见英文表头
+      return headerRow.map(cell => {
+        // 忽略大小写并去除两端空格
+        let key = cell.replace(/[^a-zA-Z]/g, '').toLowerCase();
+        // 特殊处理带空格的表头（如Shoulder Width）
+        if (cell.trim().toLowerCase() === 'shoulder width') {
+          key = 'shoulder width';
+        }
+        if (deDict[key]) {
+          return deDict[key];
+        }
+        return cell;
+      });
+    }
+
+    // 显示复制成功提示
+    function showCopySuccess() {
+      copyToast.classList.add('show');
+      setTimeout(() => {
+        copyToast.classList.remove('show');
+      }, 3000);
+    }
+
+    // 更改canvas尺寸并渲染
+    function updateCanvasSizeAndRender() {
+      const { w, h } = getSelectedSize();
+      canvas.width = w;
+      canvas.height = h;
+      renderTable(textarea.value, deLangCheckbox.checked);
+    }
+
+    // 渲染表格函数
+    function renderTable(text, isGermanHeader) {
+      const rows = text
+        .trim()
+        .split('\n')
+        .map((line) => line.trim().split(/\t| {2,}/).map((cell) => cell.trim()));
+
+      if (rows.length === 0) return;
+
+      // 若选择德语，自动翻译第一行
+      if (isGermanHeader) {
+        rows[0] = translateHeaderToGerman(rows[0]);
+      }
+
+      const R = rows.length,
+        C = rows[0].length;
+      const W = canvas.width,
+        H = canvas.height;
+      const rowH = H / R;
+
+      // 计算每列宽度：第一列15%，其余均分
+      const colWidths = [];
+      colWidths[0] = W * 0.15;
+      for (let c = 1; c < C; c++) {
+        colWidths[c] = (W * 0.85) / (C - 1);
+      }
+      const colOffsets = [];
+      colOffsets[0] = 0;
+      for (let c = 1; c < C; c++) {
+        colOffsets[c] = colOffsets[c - 1] + colWidths[c - 1];
+      }
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      let fontSize = Math.floor(rowH * 0.7);
+      while (fontSize > 6) {
+        ctx.font = `${fontSize}px Arial`;
+        let ok = true;
+        for (let r = 0; r < R && ok; r++) {
+          for (let c = 0; c < C; c++) {
+            if (ctx.measureText(rows[r][c]).width > colWidths[c] * 0.8) {
+              ok = false;
+              break;
+            }
+          }
+        }
+        if (ok) break;
+        fontSize--;
+      }
+      ctx.font = `${fontSize}px Arial`;
+
+      for (let r = 0; r < R; r++) {
+        const y = r * rowH;
+        ctx.fillStyle = r === 0 ? '#2c3e50' : r % 2 ? '#f8f9fa' : '#e9ecef';
+        ctx.fillRect(0, y, W, rowH);
+
+        for (let c = 0; c < C; c++) {
+          ctx.fillStyle = r === 0 ? '#ffffff' : '#2d3436';
+          const x = colOffsets[c] + colWidths[c] / 2;
+          ctx.fillText(rows[r][c], x, y + rowH / 2);
+        }
+      }
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      for (let r = 0; r <= R; r++) {
+        const y = r * rowH;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+      }
+      for (let c = 0; c <= C; c++) {
+        const x = c === 0 ? 0 : colOffsets[c];
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+        ctx.stroke();
+      }
+    }
+
+    btnRender.addEventListener('click', () => {
+      updateCanvasSizeAndRender();
+      btnDownload.disabled = false;
+      btnCopy.disabled = false;
+    });
+
+    btnDownload.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'table.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    btnCopy.addEventListener('click', async () => {
+      if (!navigator.clipboard) {
+        alert('当前浏览器不支持剪切板复制功能');
+        return;
+      }
+      try {
+        const blob = await new Promise((resolve) =>
+          canvas.toBlob(resolve, 'image/png')
+        );
+        if (!blob) {
+          alert('图片转换失败');
+          return;
+        }
+        const item = new ClipboardItem({ 'image/png': blob });
+        await navigator.clipboard.write([item]);
+        showCopySuccess();
+      } catch (err) {
+        console.error('复制失败:', err);
+        alert('复制失败，请确保是在安全环境（HTTPS）下，且浏览器支持 Clipboard API');
+      }
+    });
+
+    // 当切换单选按钮时，自动同步画布比例并重新渲染
+    for (const radio of sizeRadios) {
+      radio.addEventListener('change', () => {
+        updateCanvasSizeAndRender();
+      });
+    }
+
+    // 勾选德语表头时自动重绘
+    deLangCheckbox.addEventListener('change', () => {
+      updateCanvasSizeAndRender();
+    });
+
+    window.onload = () => {
+      updateCanvasSizeAndRender();
+      btnDownload.disabled = false;
+      btnCopy.disabled = false;
+    };
+  </script>
+</body>
+</html>
