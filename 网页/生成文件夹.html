@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>文件夹创建工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin: 10px 0;
+        }
+        input[type="text"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>文件夹创建工具</h1>
+        <div id="input-area">
+            <p>输入文件夹名称（每行一个）：</p>
+            <textarea id="folderNames" placeholder="例如：
+文件夹1
+文件夹2
+文件夹3"></textarea>
+
+            <p>目标目录路径：</p>
+            <input type="text" id="targetDirectory" placeholder="例如：C:\Users\123\Desktop\产品归类">
+
+            <button onclick="createBatchScript()">生成创建脚本</button>
+        </div>
+        <p>使用方法：</p>
+        <ol>
+            <li>在文本框中输入文件夹名称，每行一个</li>
+            <li>输入目标目录路径</li>
+            <li>点击生成创建脚本，下载bat文件</li>
+            <li>运行下载的bat文件创建文件夹</li>
+        </ol>
+    </div>
+
+    <script>
+        function createBatchScript() {
+            const folderNames = document.getElementById('folderNames').value.split('\n').filter(name => name.trim());
+            const targetDirectory = document.getElementById('targetDirectory').value.trim();
+
+            if (!folderNames.length || !targetDirectory) {
+                alert('请填写文件夹名称和目标目录！');
+                return;
+            }
+
+            let scriptContent = "@echo off\n";
+            scriptContent += `mkdir "${targetDirectory}" || goto :error\n`;
+
+            const currentTime = new Date().toISOString().replace(/[-:.]/g, '');
+
+            for (const folderName of folderNames) {
+                const folderPath = `${targetDirectory}/${folderName}`;
+                scriptContent += `if exist "${folderPath}" (\n`;
+                scriptContent += `echo 创建时间戳文件: ${currentTime}.txt > "${folderPath}/${currentTime}.txt" \n`;
+                scriptContent += ") else (\n";
+                scriptContent += `mkdir "${folderPath}" \n`;
+                scriptContent += ")\n";
+            }
+
+            scriptContent += "echo 文件夹创建完成！\n";
+            scriptContent += "pause\n";
+
+            const blob = new Blob([scriptContent], { type: 'text/bat' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'create_folders.bat';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

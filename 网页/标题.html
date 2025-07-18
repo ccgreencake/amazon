@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标题</title>
+    <style>
+        :root {
+            --primary: #6366F1;
+            --bg: #F8FAFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 2rem;
+            gap: 2rem;
+        }
+
+        /* 图片容器 */
+        .image-wrapper {
+            position: sticky;
+            top: 50vh;
+            transform: translateY(-50%);
+            height: 50vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            width: 80%;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        #imageContainer {
+            width: 100%;
+            max-height: 90%;
+            position: relative;
+        }
+
+        #mainImage {
+            max-width: 100%;
+            max-height: 100%;
+            cursor: move;
+        }
+
+        #imagePlaceholder {
+            color: #94A3B8;
+            text-align: center;
+            padding: 1rem;
+            width: 100%;
+        }
+
+        /* 删除按钮 */
+        .delete-btn {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background-color: #DC2626;
+        }
+
+        /* 文本编辑区 */
+        .editor-panel {
+            height: calc(100vh - 4rem);
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+
+        .text-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 100%;
+            justify-content: center;
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .text-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            position: relative;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .text-card .delete-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+
+        .text-card .delete-btn:hover {
+            background-color: #DC2626;
+        }
+
+        .text-area {
+            width: 100%;
+            min-height: 120px;
+            border: none;
+            resize: vertical;
+            font-size: 16px;
+            line-height: 1.6;
+            padding: 12px;
+            padding-bottom: 28px;
+        }
+
+        .text-area:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .char-counter {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            color: #94A3B8;
+            font-size: 0.85em;
+        }
+
+        .add-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        /* 删除所有文本框按钮 */
+        .clear-btn {
+            position: fixed;
+            bottom: 10rem;
+            right: 2rem;
+            background-color: #EF4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .clear-btn:hover {
+            background-color: #DC2626;
+        }
+
+        /* 上下按钮样式 */
+.move-btns-container {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 24px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.move-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ffffff, #e6e6e6);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.move-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 8px rgba(0,0,0,0.15);
+  background: linear-gradient(145deg, #f0f0f0, #ffffff);
+}
+
+.move-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.arrow {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.up-btn .arrow {
+  border-bottom: 8px solid #2196F3;
+  margin-top: 2px;
+}
+
+.down-btn .arrow {
+  border-top: 8px solid #2196F3;
+  margin-bottom: 2px;
+}
+
+/* 悬停时颜色变化 */
+.move-btn:hover .arrow {
+  filter: brightness(1.2);
+}
+
+/* 点击涟漪效果 */
+.move-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(33, 150, 243, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.move-btn:active::after {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+    </style>
+</head>
+<body>
+    <!-- 图片区 -->
+    <div class="image-wrapper" id="imageWrapper">
+        <div id="imageContainer">
+            <img id="mainImage" style="display: none;">
+            <div id="imagePlaceholder">Ctrl+V 粘贴图片 | 点击删除图片</div>
+            <button class="delete-btn" id="deleteImageBtn">删除图片</button> <!-- 删除图片按钮 -->
+        </div>
+    </div>
+
+    <!-- 文本区 -->
+    <div class="editor-panel">
+        <div class="text-container" id="textContainer">
+            <div class="text-card">
+                <textarea class="text-area" placeholder="输入"></textarea>
+                <div class="char-counter">0</div>
+                <button class="delete-btn" onclick="deleteTextCard(event)">删除</button>
+                <!-- 上下按钮 -->
+                <div class="move-btns-container">
+                    <button class="move-btn up-btn" onclick="moveUp(event)" aria-label="上移">
+                        <span class="arrow"></span>
+                    </button>
+                    <button class="move-btn down-btn" onclick="moveDown(event)" aria-label="下移">
+                        <span class="arrow"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="add-btn" onclick="addTextCard()">+</button>
+
+    <!-- 删除所有文本框按钮 -->
+    <button class="clear-btn" id="clearTextBtn">删除所有文本框</button>
+
+    <script>
+        // 图片操作逻辑
+        let scale = 1;
+        let offsetX = 0, offsetY = 0;
+        let isDragging = false;
+        let startX, startY;
+        const mainImage = document.getElementById('mainImage');
+        const placeholder = document.getElementById('imagePlaceholder');
+        const imageWrapper = document.getElementById('imageWrapper');
+        const deleteImageBtn = document.getElementById('deleteImageBtn');
+
+        // 拖拽处理
+        mainImage.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - offsetX;
+            startY = e.clientY - offsetY;
+            mainImage.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            offsetX = e.clientX - startX;
+            offsetY = e.clientY - startY;
+            mainImage.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            mainImage.style.cursor = 'move';
+        });
+
+        // 缩放处理
+        imageWrapper.addEventListener('wheel', (e) => {
+            if (!mainImage.src) return;
+
+            e.preventDefault();
+            const delta = e.deltaY * -0.002;
+            scale = Math.min(Math.max(0.3, scale + delta), 3);
+            mainImage.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+        });
+
+        // 图片粘贴
+        document.addEventListener('paste', (e) => {
+            const items = e.clipboardData.items;
+            for (const item of items) {
+                if (item.type.includes('image')) {
+                    const blob = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        mainImage.style.display = 'block';
+                        mainImage.src = e.target.result;
+                        placeholder.style.display = 'none';
+                        scale = 1;
+                        offsetX = offsetY = 0;
+                        mainImage.style.transform = 'scale(1)';
+                    };
+                    reader.readAsDataURL(blob);
+                }
+            }
+        });
+
+        // 删除图片按钮点击事件
+        deleteImageBtn.addEventListener('click', () => {
+            mainImage.removeAttribute('src');
+            mainImage.style.display = 'none';
+            placeholder.style.display = 'block';
+        });
+
+        // 文本框管理
+        function addTextCard() {
+            const container = document.getElementById('textContainer');
+            const newCard = document.createElement('div');
+            newCard.className = 'text-card';
+            newCard.innerHTML = `
+                <textarea class="text-area" placeholder="新的标题"></textarea>
+                <div class="char-counter">0</div>
+                <button class="delete-btn" onclick="deleteTextCard(event)">删除</button>
+                 <div class="move-btns-container">
+                    <button class="move-btn up-btn" onclick="moveUp(event)" aria-label="上移">
+                        <span class="arrow"></span>
+                    </button>
+                    <button class="move-btn down-btn" onclick="moveDown(event)" aria-label="下移">
+                        <span class="arrow"></span>
+                    </button>
+                </div>
+            `;
+
+            const textarea = newCard.querySelector('textarea');
+            const counter = newCard.querySelector('.char-counter');
+
+            textarea.addEventListener('input', () => {
+                counter.textContent = textarea.value.length;
+            });
+
+            container.appendChild(newCard);
+        }
+
+        // 删除单个文本框
+        function deleteTextCard(event) {
+            const card = event.target.closest('.text-card');
+            card.remove();
+        }
+
+        // 删除所有文本框
+        document.getElementById('clearTextBtn').addEventListener('click', () => {
+            const container = document.getElementById('textContainer');
+            container.innerHTML = '';
+            addTextCard();  // 新建一个文本框
+        });
+
+        // 上移
+        function moveUp(event) {
+            const card = event.target.closest('.text-card');
+            const prevCard = card.previousElementSibling;
+            if (prevCard) {
+                card.parentNode.insertBefore(card, prevCard);
+            }
+        }
+
+        // 下移
+        function moveDown(event) {
+            const card = event.target.closest('.text-card');
+            const nextCard = card.nextElementSibling;
+            if (nextCard) {
+                card.parentNode.insertBefore(nextCard, card);
+            }
+        }
+
+    </script>
+</body>
+</html>

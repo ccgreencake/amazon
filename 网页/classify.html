@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>类目分类工具 1.3</title>
+  <style>
+    /* 原样保留你的样式代码 */
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Open Sans', Arial, sans-serif;
+      background-color: #f0f2ff;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 { color: #4a54e1; margin-bottom: 20px; font-weight: 700; letter-spacing: 1.5px; }
+    .container {
+      background: #fff;
+      border-radius: 10px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(74, 84, 225, 0.15);
+      padding: 25px 30px;
+    }
+    .input-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; color: #4a54e1; }
+    input[type="file"] {
+      display: block; width: 100%; padding: 8px;
+      border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 14px;
+    }
+    textarea {
+      width: 100%; min-height: 80px; padding: 10px 15px; font-size: 16px;
+      border: 1px solid #ddd; border-radius: 6px; resize: vertical;
+      font-family: inherit;
+    }
+    button {
+      width: 100%; padding: 14px 0; background-color: #4a54e1;
+      border: none; color: white; font-weight: 700; font-size: 18px;
+      border-radius: 8px; cursor: pointer;
+    }
+    button:hover:not(:disabled) { background-color: #3b42b2; }
+    button:disabled { background-color: #a0a7f7; cursor: not-allowed; }
+    #previewContainer {
+      margin-top: 25px;
+      max-width: 100%;
+      overflow-x: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fbfbff;
+      padding: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 400px;
+      table-layout: fixed;
+    }
+    thead th {
+      background-color: #4a54e1;
+      color: white;
+      padding: 10px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    tbody td {
+      border: 1px solid #ddd;
+      padding: 8px 6px;
+      text-align: center;
+      font-size: 13px;
+      color: #333;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #downloadLink {
+      display: inline-block;
+      margin: 30px auto 0;
+      padding: 12px 25px;
+      background-color: #4a54e1;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      text-decoration: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #info {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+    .mode-select label {
+      display: inline-block;
+      margin-right: 15px;
+      font-weight: normal;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>类目分类工具 1.3</h1>
+  <div class="container">
+    <div class="input-group">
+      <label for="fileInput">上传 Excel 文件 (.xlsx)</label>
+      <input type="file" id="fileInput" accept=".xlsx" />
+    </div>
+    <div class="input-group">
+      <label for="categoriesInput">请输入分类关键词，用逗号分隔（英文逗号）</label>
+      <textarea id="categoriesInput" placeholder="例如：v neck,crewneck,long sleeve"></textarea>
+    </div>
+    <div class="input-group mode-select">
+      <label><input type="radio" name="mode" value="single" checked /> 单分类（每行只分一类）</label>
+      <label><input type="radio" name="mode" value="multi" /> 多分类（每行可进入多个类）</label>
+    </div>
+    <button id="processButton" disabled>开始分类</button>
+
+    <div id="previewContainer" style="display:none;">
+      <h3>分类后表格预览（最多前5行5列，包括标题）</h3>
+      <div id="previewTableWrapper"></div>
+    </div>
+
+    <a id="downloadLink" style="display: none;">点击下载分类后的表格</a>
+    <div id="info"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const categoriesInput = document.getElementById('categoriesInput');
+    const processButton = document.getElementById('processButton');
+    const downloadLink = document.getElementById('downloadLink');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewTableWrapper = document.getElementById('previewTableWrapper');
+    const info = document.getElementById('info');
+
+    let sheetData = null;
+
+    function updateProcessButtonState() {
+      processButton.disabled = !(fileInput.files.length && categoriesInput.value.trim());
+    }
+
+    fileInput.addEventListener('change', async () => {
+      updateProcessButtonState();
+      resetOutput();
+      previewContainer.style.display = 'none';
+
+      if (!fileInput.files.length) return;
+
+      const file = fileInput.files[0];
+
+      try {
+        info.textContent = '正在读取文件...';
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+        sheetData = data;
+
+        if (data.length === 0) {
+          info.textContent = '文件为空';
+          sheetData = null;
+          return;
+        }
+        info.textContent = '文件读取成功，请输入分类关键词并选择模式';
+      } catch (err) {
+        info.textContent = '加载文件出错，请确认文件格式正确';
+        sheetData = null;
+      }
+    });
+
+    categoriesInput.addEventListener('input', updateProcessButtonState);
+
+    processButton.addEventListener('click', () => {
+      if (!sheetData || sheetData.length === 0) {
+        alert('没有有效数据可处理');
+        return;
+      }
+
+      const rawCategories = categoriesInput.value.split(',').map(c => c.trim()).filter(c => c);
+      if (rawCategories.length === 0) {
+        alert('请填写至少一个分类关键词');
+        return;
+      }
+
+      const categories = rawCategories.map(c => c.toLowerCase());
+      if (!categories.includes("其他")) categories.push("其他");
+
+      const firstColumnData = sheetData.map(row => row[0] === undefined ? "" : String(row[0]).trim());
+
+      const result = {};
+      categories.forEach(cat => result[cat] = []);
+
+      function escapeRegExp(text) {
+        return text.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
+      }
+
+      const categoryRegexes = {};
+      for (const cat of categories) {
+        if (cat !== '其他') {
+          categoryRegexes[cat] = new RegExp(`\\b${escapeRegExp(cat)}\\b`, 'i');
+        }
+      }
+
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+
+      if (mode === 'multi') {
+        for (const cell of firstColumnData) {
+          const cellLow = cell.toLowerCase();
+          if (!cellLow) continue;
+
+          let matched = false;
+          for (const cat of categories) {
+            if (cat === '其他') continue;
+            if (categoryRegexes[cat].test(cellLow)) {
+              result[cat].push(cell);
+              matched = true;
+            }
+          }
+          if (!matched) {
+            result['其他'].push(cell);
+          }
+        }
+      } else {
+        for (const cell of firstColumnData) {
+          const cellLow = cell.toLowerCase();
+          if (!cellLow) {
+            result['其他'].push('');
+            continue;
+          }
+          let matchedCategory = null;
+          let matchedLength = 0;
+          for (const cat of categories) {
+            if (cat === '其他') continue;
+            if (categoryRegexes[cat].test(cellLow) && cat.length > matchedLength) {
+              matchedCategory = cat;
+              matchedLength = cat.length;
+            }
+          }
+          if (matchedCategory) {
+            result[matchedCategory].push(cell);
+          } else {
+            result['其他'].push(cell);
+          }
+        }
+        result['其他'] = result['其他'].filter(item => item !== '');
+      }
+
+      const maxRows = Math.max(...Object.values(result).map(arr => arr.length));
+      const outputData = [];
+      outputData.push(categories.map(c => c.charAt(0).toUpperCase() + c.slice(1)));
+
+      for (let i = 0; i < maxRows; i++) {
+        const row = categories.map(cat => result[cat][i] || '');
+        outputData.push(row);
+      }
+
+      renderPreviewTable(outputData);
+
+      const newSheet = XLSX.utils.aoa_to_sheet(outputData);
+      const newWorkbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(newWorkbook, newSheet, "分类结果");
+      const wbout = XLSX.write(newWorkbook, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([wbout], { type: "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+      downloadLink.download = "classified.xlsx";
+      downloadLink.style.display = "inline-block";
+      downloadLink.textContent = "点击下载分类后的表格";
+      info.textContent = "分类完成，页面下方显示预览并提供下载";
+      processButton.disabled = true;
+    });
+
+    function resetOutput() {
+      downloadLink.style.display = 'none';
+      downloadLink.href = '#';
+      downloadLink.textContent = '';
+      info.textContent = '';
+      previewTableWrapper.innerHTML = '';
+      previewContainer.style.display = 'none';
+      processButton.disabled = false;
+    }
+
+    function renderPreviewTable(data) {
+      const maxRows = Math.min(data.length, 5);
+      const maxCols = Math.min(5, data.reduce((max, row) => Math.max(max, row.length), 0));
+
+      previewTableWrapper.innerHTML = '';
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      for (let c = 0; c < maxCols; c++) {
+        const th = document.createElement('th');
+        th.textContent = (data[0][c] !== undefined && data[0][c] !== '') ? data[0][c] : `列${c + 1}`;
+        headRow.appendChild(th);
+      }
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      for (let r = 1; r < maxRows; r++) {
+        const tr = document.createElement('tr');
+        for (let c = 0; c < maxCols; c++) {
+          const td = document.createElement('td');
+          td.textContent = (data[r][c] !== undefined) ? data[r][c] : '';
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      previewTableWrapper.appendChild(table);
+      previewContainer.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

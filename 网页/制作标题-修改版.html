@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>标题生成器2.0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css" />
+  <style type="text/css">
+    body {
+      background: linear-gradient(to bottom right, #f5f7fa, #c3cfe2);
+      font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans', 'Microsoft YaHei', Arial, sans-serif;
+      min-height: 100vh;
+    }
+    #app {
+      max-width: 1800px;
+      margin: 28px auto 0 auto;
+      box-shadow: 0 4px 36px 0 rgba(80,120,220,0.06), 0 1.5px 2px 0 rgba(60,60,80,0.06);
+      border-radius: 18px;
+      background: #fff;
+      padding: 0 0 30px 0;
+    }
+    .el-row {
+      margin: 0 !important;
+    }
+    .el-col {
+      padding: 0 !important;
+    }
+    #left-area {
+      min-height: 93vh;
+      border-right: 1.5px solid #f2f4f8;
+      padding: 28px 16px 8px 16px;
+      background: rgba(245,247,251,0.78);
+      border-radius: 18px 0 0 18px;
+      box-shadow: 3px 0 7px -5px #e6e8f3;
+    }
+    #work-area {
+      padding: 10px;
+    }
+    .section-title {
+      font-weight: bold;
+      font-size: 19px;
+      letter-spacing: 1.5px;
+      color: #3866bb;
+      margin-bottom: 8px;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+    }
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 5px;
+      height: 20px;
+      background: linear-gradient(120deg, #4e7de3 60%, #66b0ff 100%);
+      border-radius: 2px;
+      margin-right: 10px;
+    }
+    .el-collapse {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+    .el-collapse-item {
+      background: #fff;
+      box-shadow: 0 2px 8px 0 rgba(77,141,255,0.04);
+      border-radius: 10px;
+      margin-bottom: 14px;
+      border: none !important;
+      overflow: visible;
+    }
+    .el-collapse-item__header {
+      background: transparent;
+      border-radius: 10px 10px 0 0;
+      min-height: 42px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #254e88;
+      border-bottom: none;
+      padding: 0 10px;
+      transition: background 0.2s;
+    }
+    .el-collapse-item__wrap {
+      border-radius: 0 0 10px 10px;
+    }
+    .folder-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 98%;
+    }
+    .folder-name-input {
+      font-size: 15px;
+      font-weight: 500;
+      background: transparent;
+      border: none;
+      outline: none;
+      border-bottom: 1.5px solid #e2e6f5;
+      width: 150px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: border-color .2s;
+      color: #2959a8;
+      letter-spacing: 0.3px;
+    }
+    .folder-name-input:focus {
+      border-color: #3a7afe;
+      background: #f2faff;
+      color: #114c9f;
+    }
+    .folder-actions .el-button {
+      margin-left: 4px;
+      border-radius: 8px !important;
+      padding: 6px 9px !important;
+      font-size: 13px !important;
+    }
+    .folder-item {
+      padding: 7px 12px;
+      border: 1px solid #e6e8f5;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #fafdff;
+      display: flex;
+      align-items: center;
+      transition: box-shadow 0.18s, border-color 0.2s;
+      box-shadow: 0 1px 2px 0 rgba(120,150,220,0.07);
+    }
+    .folder-item:hover {
+      box-shadow: 0 2px 10px 0 rgba(30,120,220,0.10);
+      border-color: #b5ccf8;
+      background: #f4faff;
+    }
+    .folder-item.dragging {
+      background: #e4f0ff;
+      border-color: #409EFF;
+    }
+    .folder-words-list {
+      margin-top: 6px;
+      min-height: 25px;
+    }
+    .folder-item .el-button {
+      margin-left: 3px;
+      border-radius: 7px !important;
+    }
+    .folder-item .el-input {
+      margin-right: 6px;
+      width: 120px;
+    }
+    .work-list .el-card {
+      border-radius: 13px;
+      box-shadow: 0 2px 12px 0 rgba(76,131,255,0.08);
+      border: none;
+      transition: box-shadow .16s;
+    }
+    .work-list .el-card:hover {
+      box-shadow: 0 4px 18px 0 rgba(77,130,255,0.17);
+    }
+    .work-list .el-card__header {
+      background: #f6faff;
+      border-radius: 13px 13px 0 0;
+      border-bottom: 0;
+      font-weight: 600;
+      font-size: 17px;
+      color: #2256a1;
+      letter-spacing: 0.5px;
+      padding: 13px 18px 8px 18px;
+    }
+    .work-list .el-input__inner {
+      background: #f4f8fd;
+      border-radius: 6px;
+    }
+    .work-list textarea {
+      border-radius: 8px;
+      border: 1.5px solid #dde6f3;
+      background: #f9fbfe;
+      font-size: 15px;
+      padding: 10px;
+    }
+    .work-list textarea:focus {
+      border-color: #409EFF;
+      background: #f6faff;
+    }
+    .el-tag {
+      border-radius: 7px !important;
+      padding: 4px 16px !important;
+      background: linear-gradient(90deg, #e5f2ff 80%, #c7e6ff 100%);
+      color: #205a9a !important;
+      font-size: 15px !important;
+      margin-bottom: 4px;
+      transition: box-shadow .14s;
+      box-shadow: 0 1px 2px 0 rgba(70,130,255,0.09);
+      border: none;
+    }
+    .el-tag+.el-tag { margin-left: 10px; }
+    .button-new-tag {
+      margin-left: 10px;
+      height: 32px;
+      line-height: 30px;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-radius: 7px !important;
+    }
+    .input-new-tag {
+      width: 170px;
+      margin-left: 10px;
+      vertical-align: bottom;
+      border-radius: 7px !important;
+    }
+    .el-card.box-card {
+      border-radius: 13px;
+      box-shadow: 0 2px 18px 0 rgba(77,141,255,0.09);
+      border: none;
+      margin-top: 30px;
+      padding-bottom: 18px;
+    }
+    .el-card__header {
+      border-radius: 13px 13px 0 0;
+      background: #f4f9ff;
+      font-weight: bold;
+      font-size: 19px;
+      letter-spacing: 1px;
+      color: #2256a1;
+      border-bottom: none;
+      padding: 16px 24px 7px 24px;
+    }
+    .import-tip {
+      color: #888;
+      font-size: 13px;
+      margin-top: 7px;
+      background: #f3f8fd;
+      border-left: 4px solid #44a0ff;
+      padding: 8px 18px;
+      border-radius: 0 9px 9px 0;
+      margin-bottom: 17px;
+      margin-top: 12px;
+    }
+    .mb-5 { margin-bottom: 5px !important; }
+    .mb-10 { margin-bottom: 10px !important; }
+    .mb-20 { margin-bottom: 20px !important; }
+    .mt-5 { margin-top: 5px !important; }
+    .mt-10 { margin-top: 10px !important; }
+    .clearfix:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+    .el-button {
+      border-radius: 8px !important;
+      font-size: 14px !important;
+      font-weight: 500;
+      box-shadow: 0 1px 1.5px 0 rgba(80,130,255,0.09);
+      transition: background 0.18s, color .14s;
+    }
+    .el-button--primary {
+      background: linear-gradient(90deg, #4e8cff, #388fff);
+      border: none;
+    }
+    .el-button--primary:hover {
+      background: linear-gradient(90deg,#388fff 70%, #3060c0);
+    }
+    .el-button--mini, .el-button--small {
+      padding: 4px 14px !important;
+    }
+    .el-button[type="text"] {
+      color: #4e7de3 !important;
+    }
+    .file-upload .el-upload input[type="file"] {
+      display: none !important;
+    }
+    @media (max-width: 1000px) {
+      #app {
+        max-width: 99vw;
+        border-radius: 0;
+        margin: 0;
+        padding: 0 !important;
+        box-shadow: none;
+      }
+      #left-area {
+        min-height: auto;
+        padding: 18px 6px 10px 6px;
+        border-radius: 0;
+      }
+      .el-card.box-card {
+        margin-top: 14px;
+        border-radius: 0;
+      }
+    }
+    @media (max-width: 750px) {
+      .el-row {
+        display: block !important;
+      }
+      #left-area {
+        border-right: none;
+        border-bottom: 1.5px solid #f2f4f8;
+        border-radius: 0;
+        padding: 12px 2vw;
+      }
+      .el-card.box-card {
+        margin-top: 0;
+        border-radius: 0 0 13px 13px;
+      }
+    }
+    /* 备注输入框样式（保持风格统一） */
+    .remark-area {
+      margin-top: 22px;
+      padding-bottom: 3px;
+    }
+    .remark-label {
+      font-weight: 500;
+      color: #335;
+      padding-bottom: 6px;
+    }
+    .remark-input .el-textarea__inner {
+      min-height: 60px;
+      height: 80px;
+      resize: vertical;
+      border-radius: 10px;
+      background: #f9fbfe;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <el-row :gutter="0">
+      <!-- 左侧：收藏夹 + 工作区 -->
+      <el-col :md="12" :xs="24">
+        <div id="left-area">
+          <!-- 收藏夹区域 -->
+          <div class="section-title">收藏夹</div>
+          <el-button type="primary" size="small" icon="el-icon-plus" @click="addFolder">新增收藏夹</el-button>
+          <el-collapse v-model="expandedFolders" style="margin-top:10px;">
+            <el-collapse-item v-for="folder in folders" :key="folder.id" :name="folder.id.toString()">
+              <template #title>
+                <div class="folder-header" @click.stop>
+                  <input
+                    class="folder-name-input"
+                    v-model="folder.editName"
+                    :readonly="!folder.editing"
+                    @keydown.enter.prevent
+                  />
+                  <div class="folder-actions">
+                    <el-button
+                      size="mini"
+                      type="primary"
+                      v-if="folder.editing"
+                      @click.stop="confirmFolderName(folder)"
+                      icon="el-icon-check"
+                      >确定</el-button>
+                    <el-button
+                      type="text"
+                      size="mini"
+                      icon="el-icon-edit"
+                      v-else
+                      @click.stop="startEditFolderName(folder)"
+                      title="重命名"
+                    ></el-button>
+                    <el-button
+                      type="text"
+                      size="mini"
+                      icon="el-icon-delete"
+                      @click.stop="deleteFolder(folder.id)"
+                      title="删除收藏夹"
+                    ></el-button>
+                  </div>
+                </div>
+              </template>
+              <draggable v-model="folder.items"
+                :group="{ name: 'words', pull: 'clone', put: true }"
+                :clone="cloneWord"
+                item-key="id"
+                @change="saveState"
+                :sort="true"
+                class="folder-words-list"
+              >
+                <transition-group>
+                  <div
+                    class="folder-item list-group-item"
+                    v-for="(word, index) in folder.items"
+                    :key="word.id"
+                  >
+                    <el-input
+                      v-model="word.editTitle"
+                      size="small"
+                      placeholder="请输入词库标题"
+                      :disabled="isWordInWorkList(folder, word) || !word.editing"
+                      @keydown.enter.prevent
+                    ></el-input>
+                    <el-button
+                      size="mini"
+                      type="primary"
+                      v-if="word.editing"
+                      @click.stop="confirmWordTitle(folder, word)"
+                      icon="el-icon-check"
+                    >确定</el-button>
+                    <el-button
+                      type="text"
+                      size="mini"
+                      icon="el-icon-edit"
+                      v-else
+                      @click.stop="startEditWordTitle(folder, word)"
+                      title="重命名"
+                      :disabled="isWordInWorkList(folder, word)"
+                    ></el-button>
+                    <el-button
+                      icon="el-icon-delete"
+                      type="text"
+                      size="small"
+                      @click.stop="deleteWordFromFolder(folder, index)"
+                      title="删除词库"
+                    ></el-button>
+                    <el-button
+                      size="mini"
+                      type="primary"
+                      icon="el-icon-arrow-right"
+                      @click="addWordToWorkArea(folder, word)"
+                      :disabled="isWordInWorkList(folder, word)"
+                      title="加入工作区"
+                    >
+                      加入
+                    </el-button>
+                  </div>
+                </transition-group>
+              </draggable>
+              <div style="margin-top:8px;">
+                <el-button
+                  size="mini"
+                  type="primary"
+                  icon="el-icon-circle-plus-outline"
+                  @click="addWordToFolder(folder)"
+                >添加词库</el-button>
+              </div>
+            </el-collapse-item>
+          </el-collapse>
+
+          <el-divider style="margin:18px 0 15px 0;"></el-divider>
+
+          <!-- 工作区区域 -->
+          <div class="section-title" style="margin-bottom:6px;">工作区词库</div>
+          <draggable v-model="workList"
+            :group="{ name: 'words', pull: true, put: true }"
+            :clone="cloneWord"
+            item-key="id"
+            class="work-list"
+            @change="saveState"
+            @add="onWorkAdd"
+          >
+            <transition-group>
+              <el-card
+                v-for="(word, i) in workList"
+                :key="word.id"
+                class="box-card mb-10"
+                :style="{ cursor: 'move' }"
+              >
+                <div slot="header" style="display: flex; justify-content: space-between; align-items: center;">
+                  <div style="flex: 1;">
+                    <div style="font-weight: bold; margin-bottom: 4px; font-size: 16px;">
+                      {{ word.folderName ? word.folderName + '/' : '' }}{{ word.title || '无标题' }}
+                    </div>
+                    <el-input
+                      v-model="workList[i].title"
+                      size="small"
+                      placeholder="请输入词库标题"
+                      disabled
+                    ></el-input>
+                  </div>
+                  <div style="margin-left: 10px; white-space: nowrap;">
+                    <el-button
+                      size="mini"
+                      type="text"
+                      icon="el-icon-delete"
+                      @click="deleteWorkWord(i)"
+                      title="删除（移回收藏夹）"
+                    ></el-button>
+                  </div>
+                </div>
+                <textarea
+                  v-model="word.content"
+                  rows="8"
+                  style="width: 100%; resize: vertical; margin-top: 10px;"
+                  placeholder="词库内容..."
+                  @input="handleTextareaInput(word)"
+                ></textarea>
+              </el-card>
+            </transition-group>
+          </draggable>
+        </div>
+      </el-col>
+
+      <!-- 右侧：标题拼接与导入导出 -->
+      <el-col :md="12" :xs="24">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span>标题</span>
+            <el-button size="mini" @click="exportExcelFull" icon="el-icon-download" style="float:right;">导出全部</el-button>
+            <label class="file-upload">
+              <el-upload
+                :before-upload="beforeImportExcel"
+                :show-file-list="false"
+                accept=".xlsx,.xls"
+                action=""
+              >
+                <el-button size="mini" icon="el-icon-folder-opened">导入全部</el-button>
+              </el-upload>
+            </label>
+          </div>
+          <div class="import-tip">导出/导入格式：每个sheet是一个收藏夹，每列是一个词库，首行为词库名，内容为一行一词。导入功能仅支持标准Excel表。</div>
+          <div class="mb-20" style="overflow: hidden;">
+            <div class="mb-5">规则</div>
+            <div class="mb-20" style="display: flex; flex-wrap: wrap; align-items: flex-start;">
+              <div>
+                <draggable v-model="dynamicTags" group="people" @start="drag=true" @end="drag=false">
+                  <el-tag
+                    class="list-group-item"
+                    :key="tag"
+                    v-for="(tag, index) in dynamicTags"
+                    closable
+                    :disable-transitions="true"
+                    @close="handleClose(index)"
+                  >{{ tag }}</el-tag>
+                </draggable>
+              </div>
+              <div>
+                <el-autocomplete
+                  class="input-new-tag"
+                  v-if="inputVisible"
+                  v-model="inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  :fetch-suggestions="querySearch"
+                  @select="handleInputConfirm"
+                  placeholder="选择词库"
+                ></el-autocomplete>
+                <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 其他</el-button>
+              </div>
+            </div>
+          </div>
+          <div style="clear: both;"></div>
+          <el-input
+            v-model="title"
+            v-for="title in titles"
+            class="mt-5"
+            :maxlength="maxLength"
+            :minlength="minLength"
+            show-word-limit
+            style="margin-bottom:8px;border-radius:7px;"
+          ></el-input>
+          <span style="margin-right:12px;">max:</span>
+          <el-input-number v-model="maxLength" :step="5"></el-input-number>
+          <span style="margin-left:18px;margin-right:12px;">min:</span>
+          <el-input-number v-model="minLength" :step="5"></el-input-number>
+          <el-button class="mt-10" type="primary" @click="randomGenerate">生成</el-button>
+          <download-excel :data="json_data" :fields="json_fields" style="display: inline-block;">
+            <el-button class="mt-5" icon="el-icon-tickets" @click="handleExport">导出Excel</el-button>
+          </download-excel>
+          <el-button class="mt-10" type="primary" @click="st">ST(全小写)</el-button>
+          <el-button class="mt-10" type="primary" @click="titleMode">标题(首字母大写，除介词)</el-button>
+
+          <!-- 右下角独立备注输入框区域 -->
+          <div class="remark-area">
+            <div class="remark-label">备注</div>
+            <el-input
+              class="remark-input"
+              type="textarea"
+              placeholder="可在此处添加独立备注内容..."
+              v-model="remarkText"
+            ></el-input>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+  </div>
+  <!-- xlsx.js 仅用于导入功能 -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/vue@2.6.14/dist/vue.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/vuedraggable@2.20.0/dist/vuedraggable.umd.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/vue-json-excel@0.3.0/dist/vue-json-excel.umd.js"></script>
+  <script>
+    if (typeof window !== "undefined" && "Vue" in window) {
+      window.Vue.component("downloadExcel", JsonExcel);
+    }
+    let uniqueId = 1;
+    function getNextFolderName(folders) {
+      let n = 1;
+      while (folders.some(f => f.name === "新增收藏夹" + n)) n++;
+      return "新增收藏夹" + n;
+    }
+    function getNextWordTitle(folder) {
+      let n = 1;
+      while (folder.items.some(w => w.title === "属性" + n)) n++;
+      return "属性" + n;
+    }
+    const preset = ["押词", "形容词", "长尾词"];
+    new Vue({
+      el: "#app",
+      data: {
+        folders: [],
+        expandedFolders: [],
+        workList: [],
+        titles: [],
+        maxLength: 115,
+        minLength: 0,
+        ignore_capital_letters: [
+          "a", "an", "and", "or", "for", "the", "with", "of", "in", "to", "by", "from", "as", "at",
+        ],
+        dynamicTags: [],
+        inputVisible: false,
+        inputValue: "",
+        json_fields: {},
+        json_data: [],
+        extitle: "标题",
+        flag: "0",
+        remarkText: "", // 独立备注输入框的数据
+      },
+      created() {
+        const fileName = this.getFileName();
+        try {
+          this.folders = JSON.parse(window.localStorage.getItem(fileName + "folders")) || [];
+          this.workList = JSON.parse(window.localStorage.getItem(fileName + "workList")) || [];
+          this.dynamicTags = JSON.parse(window.localStorage.getItem(fileName + "tags")) || [];
+          this.addIdsToFolders();
+          this.addEditNames();
+          this.syncWorkListFolderInfo();
+          this.workList.forEach(word => this.handleTextareaInput(word));
+          this.expandedFolders = this.folders.map(f => f.id.toString());
+        } catch (err) {
+          if (this.folders.length === 0) {
+            this.folders.push({
+              id: uniqueId++,
+              name: "默认收藏夹",
+              editName: "默认收藏夹",
+              editing: false,
+              expanded: true,
+              items: preset.map((p, i) => ({
+                id: this.genWordId(),
+                title: p,
+                editTitle: p,
+                editing: false,
+                content: "",
+              })),
+            });
+          }
+          if (this.workList.length === 0) this.workList = [];
+          if (this.dynamicTags.length === 0) for (let p of preset) this.dynamicTags.push("默认收藏夹/" + p);
+          this.expandedFolders = this.folders.map(f => f.id.toString());
+        }
+      },
+      methods: {
+        // 收藏夹名编辑
+        startEditFolderName(folder) {
+          folder.editing = true;
+          folder.editName = folder.name;
+          setTimeout(() => {
+            this.$nextTick(() => {
+              const input = document.querySelector('.folder-name-input[readonly=""]');
+              if (input) input.focus();
+            });
+          }, 0);
+        },
+        // 确认收藏夹名
+        confirmFolderName(folder) {
+          let newName = (folder.editName || "").trim();
+          if (!newName) {
+            this.$message.error("收藏夹名不能为空！");
+            return;
+          }
+          if (this.folders.filter(f=>f.id!==folder.id).some(f => f.name === newName)) {
+            this.$message.error("收藏夹名字不能重复！");
+            return;
+          }
+          folder.editing = false;
+          folder.name = folder.editName;
+          this.workList.forEach(w => {
+            if (w.folderId === folder.id) w.folderName = folder.name;
+          });
+          this.syncDynamicTags();
+          this.saveState();
+        },
+        addEditNames() {
+          this.folders.forEach(folder => {
+            if (!("editName" in folder)) folder.editName = folder.name;
+            if (!("editing" in folder)) folder.editing = false;
+            folder.items.forEach(word => {
+              if (!("editTitle" in word)) word.editTitle = word.title;
+              if (!("editing" in word)) word.editing = false;
+            });
+          });
+        },
+        // 词库名编辑
+        startEditWordTitle(folder, word) {
+          if (this.isWordInWorkList(folder, word)) return;
+          word.editing = true;
+          word.editTitle = word.title;
+          setTimeout(() => {
+            this.$nextTick(() => {
+              const input = document.querySelector('.el-input__inner[disabled=""]');
+              if (input) input.focus();
+            });
+          }, 0);
+        },
+        // 确认词库名
+        confirmWordTitle(folder, word) {
+          let newTitle = (word.editTitle || "").trim();
+          if (!newTitle) {
+            this.$message.error("词库名不能为空！");
+            return;
+          }
+          if (folder.items.filter(w=>w.id!==word.id).some(w => w.title === newTitle)) {
+            this.$message.error("同收藏夹内词库名字不能重复！");
+            return;
+          }
+          word.editing = false;
+          word.title = word.editTitle;
+          this.workList.forEach(w => {
+            if (w.folderId === folder.id && w.title === word.oldTitle) {
+              w.title = newTitle;
+            }
+          });
+          this.syncDynamicTags();
+          this.saveState();
+        },
+        isWordInWorkList(folder, word) {
+          return this.workList.some(w => w.folderId === folder.id && w.title === word.title);
+        },
+        deleteWorkWord(index) {
+          const word = this.workList[index];
+          let folder = null;
+          if (word.folderId) {
+            folder = this.folders.find(f => f.id === word.folderId);
+          }
+          if (!folder && word.folderName) {
+            folder = this.folders.find(f => f.name === word.folderName);
+          }
+          if (folder) {
+            let item = folder.items.find(it => it.title === word.title);
+            if (item) item.content = word.content;
+          }
+          this.workList.splice(index, 1);
+          this.syncDynamicTags();
+          this.saveState();
+        },
+        handleTextareaInput(word) {
+          if (!word) return;
+          let str = word.content;
+          if (str) {
+            str = str.replace(/\r/gi, "");
+            const arr = str.split("\n");
+            let lineNumber = "";
+            for (let i = 1; i <= arr.length; i++) lineNumber += i + "\n";
+            this.$set(word, "lineNumber", lineNumber);
+          } else {
+            this.$set(word, "lineNumber", "");
+          }
+          this.saveState();
+        },
+        genWordId() { return "w" + uniqueId++; },
+        addWordToWorkArea(folder, word) {
+          if (this.isWordInWorkList(folder, word)) return;
+          const newWord = {
+            id: this.genWordId(),
+            title: word.title,
+            content: word.content,
+            lineNumber: word.lineNumber || "",
+            folderId: folder.id,
+            folderName: folder.name,
+          };
+          this.workList.push(newWord);
+          this.syncDynamicTags();
+          this.saveState();
+        },
+        syncWorkListFolderInfo() {
+          this.workList.forEach(word => {
+            if (!word.folderId || !word.folderName) {
+              for (const folder of this.folders) {
+                if (folder.items.some(item => item.title === word.title)) {
+                  word.folderId = folder.id;
+                  word.folderName = folder.name;
+                  break;
+                }
+              }
+            }
+          });
+        },
+        addIdsToFolders() {
+          this.folders.forEach((folder) => {
+            folder.items.forEach((word) => {
+              if (!word.id) word.id = this.genWordId();
+            });
+          });
+        },
+        getFileName() {
+          var arr = location.href.split("/");
+          var fileName = arr[arr.length - 1];
+          return fileName;
+        },
+        addFolder() {
+          let name = getNextFolderName(this.folders);
+          const newFolder = {
+            id: uniqueId++,
+            name,
+            editName: name,
+            editing: false,
+            expanded: true,
+            items: [],
+          };
+          this.folders.push(newFolder);
+          this.expandedFolders.push(newFolder.id.toString());
+          this.saveState();
+        },
+        deleteFolder(folderId) {
+          this.folders = this.folders.filter((f) => f.id !== folderId);
+          this.expandedFolders = this.expandedFolders.filter(
+            (id) => id !== folderId.toString()
+          );
+          this.saveState();
+        },
+        addWordToFolder(folder) {
+          let title = getNextWordTitle(folder);
+          folder.items.push({
+            id: this.genWordId(),
+            title,
+            editTitle: title,
+            editing: false,
+            content: "",
+          });
+          this.saveState();
+        },
+        deleteWordFromFolder(folder, index) {
+          folder.items.splice(index, 1);
+          this.saveState();
+        },
+        onWorkAdd(evt) {
+          const item = this.workList[evt.newIndex];
+          if (evt.from && evt.from.__vue__ && evt.from.__vue__.folder) {
+            item.folderId = evt.from.__vue__.folder.id;
+            item.folderName = evt.from.__vue__.folder.name;
+          }
+          this.syncDynamicTags();
+          this.saveState();
+        },
+        syncDynamicTags() {
+          const validKeys = this.workList.map(w => this.getDisplayTitle(w));
+          this.dynamicTags = this.dynamicTags.filter(tag => validKeys.includes(tag));
+        },
+        cloneWord(orig) {
+          let folderId = orig.folderId;
+          let folderName = orig.folderName;
+          if (!folderId || !folderName) {
+            for (const folder of this.folders) {
+              if (folder.items.some(item => item.id === orig.id)) {
+                folderId = folder.id;
+                folderName = folder.name;
+                break;
+              }
+            }
+          }
+          return {
+            id: this.genWordId(),
+            title: orig.title,
+            content: orig.content,
+            lineNumber: orig.lineNumber || "",
+            folderId,
+            folderName,
+          };
+        },
+        getDisplayTitle(word) {
+          return (word.folderName ? word.folderName + "/" : "") + (word.title || "");
+        },
+        getWorkTitleByTag(tag) {
+          return this.workList.find(w => this.getDisplayTitle(w) === tag);
+        },
+        gen(arr) {
+          if (!arr || arr.length == 0) return "";
+          let index = Math.floor(Math.random() * arr.length);
+          let result = this.trim(arr[index]) + " ";
+          arr.splice(index, 1);
+          return result;
+        },
+        makeString(object) { if (object == null) return ""; return "" + object; },
+        isBlank(str) { return /^\s*$/.test(this.makeString(str)); },
+        trim(str) {
+          if (!str) return "";
+          var characters = "\\s";
+          return str.replace(
+            new RegExp("^" + characters + "+|" + characters + "+$", "g"),
+            ""
+          );
+        },
+        capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); },
+        capitalizeTitle(title) {
+          let newStr = [];
+          let split = title.split(" ");
+          for (let word of split) {
+            if (this.ignore_capital_letters.includes(word.toLowerCase())) {
+              word = word.toLowerCase();
+            } else {
+              word = this.capitalize(word.toLowerCase());
+            }
+            if (word.indexOf("-") != -1) {
+              let split2 = word.split("-");
+              if (split2.length > 1) word = split2[0] + "-" + this.capitalize(split2[1]);
+            }
+            newStr.push(this.trim(word));
+          }
+          return newStr.join(" ");
+        },
+        handleAddOther() {
+          this.workList.push({ id: this.genWordId(), title: "", content: "" });
+        },
+        handleClose(index) { this.dynamicTags.splice(index, 1); },
+        showInput() {
+          this.inputVisible = true;
+          this.$nextTick(() => { this.$refs.saveTagInput.$refs.input.focus(); });
+        },
+        handleInputConfirm(val) {
+          let inputValue = this.inputValue || (val && val.value) || "";
+          if (inputValue) {
+            const titles = this.workList.map(w => this.getDisplayTitle(w));
+            if (titles.includes(inputValue)) {
+              this.dynamicTags.push(inputValue);
+            } else {
+              this.$message.warning("只能选择当前在工作区的词库标题！");
+            }
+          }
+          this.inputVisible = false;
+          this.inputValue = "";
+        },
+        querySearch(queryString, cb) {
+          let results = [];
+          let uniqueTitles = [...new Set(this.workList.map(w => this.getDisplayTitle(w)).filter(Boolean))];
+          uniqueTitles.forEach((title) => {
+            if (title && title.toLowerCase().indexOf(queryString.toLowerCase()) !== -1) {
+              results.push({ value: title });
+            }
+          });
+          cb(results);
+        },
+        getMax() {
+          let map = {};
+          for (const e of this.workList) {
+            map[this.getDisplayTitle(e)] = e.content.split(/[(\r\n)\r\n]+/).filter(e => !this.isBlank(e)).length;
+          }
+          let max = 1;
+          for (const tag of this.dynamicTags) {
+            if (map[tag]) max = max * map[tag];
+          }
+          return max;
+        },
+        handleExport() {
+          this.json_fields = {};
+          this.json_data = [];
+          this.json_fields[this.extitle] = "标题";
+          let max = 20000;
+          let exist = [];
+          for (let i = 0; i < max; i++) {
+            const data = {};
+            let map = {};
+            for (const e of this.workList) {
+              map[this.getDisplayTitle(e)] = e.content.split(/[(\r\n)\r\n]+/).filter(e => !this.isBlank(e));
+            }
+            let t = "";
+            for (const tag of this.dynamicTags) t = t + this.gen(map[tag]);
+            if (t.length > 115) {}
+            let title = this.trim(this.capitalizeTitle(t));
+            if (this.flag == "1") title = title.toLowerCase();
+            if (exist.indexOf(title) != -1) continue;
+            if (title.length < this.minLength || title.length > this.maxLength) continue;
+            exist.push(title);
+            data["标题"] = title;
+            this.json_data.push(data);
+          }
+          const fileName = this.getFileName();
+          window.localStorage.setItem(fileName + "folders", JSON.stringify(this.folders));
+          window.localStorage.setItem(fileName + "workList", JSON.stringify(this.workList));
+          window.localStorage.setItem(fileName + "tags", JSON.stringify(this.dynamicTags));
+        },
+        randomGenerate() {
+          this.titles = [];
+          for (let i = 0; i < 10; i++) {
+            let map = {};
+            for (const e of this.workList) {
+              map[this.getDisplayTitle(e)] = e.content.split(/[(\r\n)\r\n]+/).filter(e => !this.isBlank(e));
+            }
+            let t = "";
+            for (const tag of this.dynamicTags) t = t + this.gen(map[tag]);
+            this.titles.push(this.trim(this.capitalizeTitle(t)));
+          }
+          const fileName = this.getFileName();
+          window.localStorage.setItem(fileName + "folders", JSON.stringify(this.folders));
+          window.localStorage.setItem(fileName + "workList", JSON.stringify(this.workList));
+          window.localStorage.setItem(fileName + "tags", JSON.stringify(this.dynamicTags));
+        },
+        st() { this.maxLength = 250; this.minLength = 240; this.extitle = "ST"; this.flag = "1"; },
+        titleMode() { this.maxLength = 200; this.minLength = 180; this.extitle = "标题"; this.flag = "0"; },
+        saveState() {
+          const fileName = this.getFileName();
+          window.localStorage.setItem(fileName + "folders", JSON.stringify(this.folders));
+          window.localStorage.setItem(fileName + "workList", JSON.stringify(this.workList));
+          window.localStorage.setItem(fileName + "tags", JSON.stringify(this.dynamicTags));
+        },
+        // --- 导入导出所有收藏夹为excel ---
+        async exportExcelFull() {
+          const wb = XLSX.utils.book_new();
+          this.folders.forEach(folder => {
+            const sheetData = [];
+            let maxLen = 0;
+            const cols = folder.items.map(item => {
+              const arr = (item.content || '').split(/\r\n|\n/);
+              if (arr.length > maxLen) maxLen = arr.length;
+              return [item.editTitle, ...arr];
+            });
+            for (let i = 0; i <= maxLen; i++) {
+              const row = [];
+              for (const col of cols) {
+                row.push(col[i] === undefined ? '' : col[i]);
+              }
+              sheetData.push(row);
+            }
+            const ws = XLSX.utils.aoa_to_sheet(sheetData);
+            XLSX.utils.book_append_sheet(wb, ws, folder.editName);
+          });
+          const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+          const blob = new Blob([wbout], {type: "application/octet-stream"});
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = "词库配置.xlsx";
+          link.click();
+        },
+        beforeImportExcel(file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const workbook = XLSX.read(e.target.result, {type:"array"});
+              let folders = [];
+              for (const sheetName of workbook.SheetNames) {
+                const ws = workbook.Sheets[sheetName];
+                const aoa = XLSX.utils.sheet_to_json(ws, {header:1, blankrows:false});
+                if (!aoa || aoa.length === 0) continue;
+                const titles = aoa[0];
+                const items = [];
+                titles.forEach((wordTitle, wordIdx) => {
+                  let lines = [];
+                  for (let i=1;i<aoa.length;i++) {
+                    if (aoa[i][wordIdx]!==undefined && aoa[i][wordIdx]!=="") lines.push(aoa[i][wordIdx]);
+                  }
+                  items.push({
+                    id: "w" + (uniqueId++),
+                    title: wordTitle,
+                    editTitle: wordTitle,
+                    editing: false,
+                    content: lines.join("\n")
+                  });
+                });
+                folders.push({
+                  id: uniqueId++,
+                  name: sheetName,
+                  editName: sheetName,
+                  editing: false,
+                  expanded: true,
+                  items
+                });
+              }
+              this.folders = folders;
+              this.workList = [];
+              this.dynamicTags = [];
+              this.expandedFolders = this.folders.map(f => f.id.toString());
+              this.saveState();
+              this.$message.success("导入成功！");
+            } catch(e) {
+              this.$message.error("导入失败：" + (e.message || ''));
+            }
+          };
+          reader.readAsArrayBuffer(file);
+          return false;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

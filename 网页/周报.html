@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>多账号周报处理工具（可多次添加文件）</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 850px;
+            width: 96%;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input[type="file"], button {
+            margin: 10px 5px;
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+            width: 100%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: #fff;
+        }
+        tr:nth-child(even) td {
+            background-color: #f2f2f2;
+        }
+        tr:hover td {
+            background-color: #ddd;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        .filename-title {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #2196f3;
+        }
+        .file-list {
+            margin: 10px auto 10px auto;
+            padding: 0;
+            list-style: none;
+            max-width: 500px;
+            text-align: left;
+        }
+        .file-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .file-remove {
+            margin-left: 10px;
+            color: #c00;
+            cursor: pointer;
+            padding: 2px 6px;
+            background: #ffeaea;
+            border: 1px solid #c66;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>多账号周报文件处理<br><span style="font-size:14px;color:#888;">（可多次添加、跨文件夹）</span></h2>
+        <input type="file" id="fileInput" accept=".csv" >
+        <button onclick="processFiles()">处理所有上传文件</button>
+        <div>
+            <strong>已选文件：</strong>
+            <ul class="file-list" id="fileList"></ul>
+        </div>
+        <div id="result"></div>
+    </div>
+    <script>
+        // 用于存储所有用户已选文件的数组
+        let selectedFiles = [];
+
+        // 切换时，把新选的文件append进去selectedFiles（去重：同名文件将后选覆盖前选）
+        document.getElementById('fileInput').addEventListener('change', function(e){
+            const files = Array.from(e.target.files);
+            // 文件名唯一处理（可根据实际需要改为用lastModified等更严谨判重）
+            const fileMap = new Map();
+            selectedFiles.forEach(file => fileMap.set(file.name, file));
+            files.forEach(file => fileMap.set(file.name, file)); // 后选的覆盖前选的
+            selectedFiles = Array.from(fileMap.values());
+            renderFileList();
+            document.getElementById('fileInput').value = ''; // 方便连续选
+        });
+
+        // 展示所有已选文件，可逐一删除
+        function renderFileList() {
+            const list = document.getElementById('fileList');
+            if (!selectedFiles.length) {
+                list.innerHTML = '<li style="color:#ccc;">（无文件）</li>';
+                return;
+            }
+            list.innerHTML = selectedFiles.map((file, idx) =>
+                `<li>${escapeHtml(file.name)}
+                     <span class="file-remove" title="删除此文件" onclick="removeFile(${idx})">删除</span>
+                 </li>`).join('');
+        }
+
+        // 删除已选文件
+        function removeFile(idx) {
+            selectedFiles.splice(idx, 1);
+            renderFileList();
+        }
+
+        // 处理所有已上传的文件
+        function processFiles() {
+            const resultDiv = document.getElementById('result');
+            if (!selectedFiles.length) {
+                resultDiv.innerHTML = '<span style="color: red">请先上传一个或多个CSV文件</span>';
+                return;
+            }
+            resultDiv.innerHTML = '<div class="loading">处理中...</div>';
+
+            // 分类顺序及中文名
+            const order = [
+                'Refund',
+                'Shipping Services',
+                'SAFE-T reimbursement',
+                'Service Fee'
+            ];
+            const labelMap = {
+                'Refund': '退款',
+                'Shipping Services': '退货标签',
+                'SAFE-T reimbursement': '索赔',
+                'Service Fee': '优惠券'
+            };
+
+            // 汇总所有账号合计
+            let totalSums = {};
+            order.forEach(cat => totalSums[cat] = 0);
+
+            // 读取所有文件
+            let processed = 0;
+            let fileResults = new Array(selectedFiles.length);
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const reader = new FileReader();
+                (function(file, idx){
+                    reader.onload = function(e) {
+                        try {
+                            const text = e.target.result;
+                            const allLines = text.split(/\r\n|\n/).slice(8);
+
+                            // 原始分类集合
+                            const validCategories = new Set(order);
+
+                            // 单个文件结果
+                            let results = {};
+                            order.forEach(cat => results[cat] = 0);
+
+                            allLines.forEach(line => {
+                                if (!line.trim()) return;
+                                const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                                if (cols.length < 3) return;  // 最少要有3列才能取分类
+                                const category = cols[2].replace(/^"|"$/g, '').trim();
+                                if (!validCategories.has(category)) return;
+
+                                // Service Fee 只统计 Coupon 相关
+                                if (category === 'Service Fee') {
+                                    const col6 = cols[5]?.replace(/^"|"$/g, '').trim() || '';
+                                    if (!col6.includes('Coupon')) return;
+                                }
+
+                                // 动态取倒数第一列
+                                const lastCol = cols[cols.length - 1];
+                                const valueStr = lastCol.replace(/[^\d.-]/g, '').trim() || '0';
+                                const value = parseFloat(valueStr) || 0;
+                                results[category] += Math.abs(value);
+                            });
+
+                            // 累加到总和
+                            order.forEach(cat => {
+                                totalSums[cat] += results[cat];
+                            });
+
+                            // 保存到所有文件结果
+                            fileResults[idx] = {
+                                filename: file.name,
+                                results: results
+                            };
+                        } catch (e) {
+                            fileResults[idx] = {
+                                filename: file.name,
+                                error: '处理失败: ' + escapeHtml(e.message)
+                            };
+                        }
+
+                        processed++;
+                        if (processed === selectedFiles.length) {
+                            renderAllResults(fileResults, totalSums, resultDiv, order, labelMap);
+                        }
+                    };
+                    reader.onerror = function() {
+                        fileResults[idx] = {
+                            filename: file.name,
+                            error: '文件读取失败'
+                        };
+                        processed++;
+                        if (processed === selectedFiles.length) {
+                            renderAllResults(fileResults, totalSums, resultDiv, order, labelMap);
+                        }
+                    };
+                    reader.readAsText(file, 'UTF-8');
+                })(selectedFiles[i], i);
+            }
+        }
+
+        function renderAllResults(fileResults, totalSums, resultDiv, order, labelMap) {
+    let html = '';
+    let hasData = false;
+
+    // 表格表头
+    html += `<table>
+                <tr>
+                    <th>文件名</th>
+                    ${order.map(cat => `<th>${escapeHtml(labelMap[cat] || cat)}</th>`).join('')}
+                </tr>`;
+
+    fileResults.forEach(fileResult => {
+        if (fileResult.error) {
+            html += `<tr><td colspan="${order.length + 1}" style="color: red">${escapeHtml(fileResult.filename)}: ${escapeHtml(fileResult.error)}</td></tr>`;
+            return;
+        }
+
+        const rowData = order.map(cat =>
+            typeof fileResult.results[cat] !== 'undefined'
+                ? `<td>${fileResult.results[cat].toFixed(2)}</td>`
+                : `<td>0.00</td>`
+        ).join('');
+
+        html += `<tr>
+                    <td>${escapeHtml(fileResult.filename)}</td>
+                    ${rowData}
+                </tr>`;
+
+        if (Object.values(fileResult.results).some(val => val > 0)) {
+            hasData = true;
+        }
+    });
+
+    // 总计行
+    html += `<tr style="font-weight:bold;color:#2e7d32;background:#e8f5e9;">
+                <td>总计</td>
+                ${order.map(cat => `<td>${totalSums[cat].toFixed(2)}</td>`).join('')}
+             </tr>`;
+    html += `</table>`;
+
+    if (!hasData) html = `<span style="color: red">没有匹配的数据</span>`;
+    resultDiv.innerHTML = html;
+}
+
+
+        // 防止XSS攻击的HTML转义
+        function escapeHtml(text) {
+            return text.toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        // 初始化文件列表展示
+        renderFileList();
+    </script>
+</body>
+</html>

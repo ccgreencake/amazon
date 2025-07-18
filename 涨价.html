@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>跨境电商定价分析仪</title>
+  <!-- Google Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #334155;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-50: #eef2ff;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.08);
+      --transition: all 0.2s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px; line-height: 1.6;
+    }
+    .container {
+      width: 100%; max-width: 800px; margin: 0 auto;
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+    .card:hover { transform: translateY(-4px); }
+    header {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      padding: 28px 32px; position: relative; overflow: hidden;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      top: -50px; right: -50px;
+      width: 120px; height: 120px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+    header h1 {
+      color: #fff;
+      font-size: 1.75rem;
+      letter-spacing: -0.5px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .content {
+      padding: 32px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px 32px;
+    }
+    .form-group {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .form-group i {
+      position: absolute;
+      top: 38px; left: 14px;
+      color: var(--accent);
+      font-size: 1.1rem;
+      transition: var(--transition);
+    }
+    .form-group input {
+      padding: 14px 14px 14px 40px;
+      font-size: 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: var(--radius-md);
+      transition: var(--transition);
+      background: var(--bg);
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-50);
+    }
+    .form-group input:focus + i {
+      color: var(--accent-light);
+    }
+    .form-group label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+    .full-width {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      display: flex;
+      gap: 16px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 14px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      flex: 1;
+      justify-content: center;
+    }
+    .btn:hover {
+      background: var(--accent-light);
+      box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    }
+    .btn:active { transform: scale(0.98); }
+
+    .result {
+      background: var(--accent-50);
+      border-radius: var(--radius-md);
+      margin: 24px 32px;
+      padding: 24px;
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .result-item {
+      background: white;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border-left: 4px solid var(--accent);
+    }
+    .result-item p {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    .result-item span {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    #chart-container {
+      margin: 0 32px 32px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: none;
+      animation: slideUp 0.4s ease;
+    }
+
+    /* 公式弹窗 */
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 1000;
+    }
+    .modal {
+      background: #fff;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .modal h3 {
+      margin-bottom: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .modal p {
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .btn-close {
+      margin-top: 24px;
+      background: #fff;
+      color: var(--accent);
+      border: 2px solid var(--accent);
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-close:hover {
+      background: var(--accent-50);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media(max-width: 768px) {
+      .content { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.5rem; }
+      .result-grid { grid-template-columns: 1fr; }
+      .content, header, .result, #chart-container {
+        padding: 24px; margin: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+
+      <header>
+        <h1><i class='bx bx-line-chart'></i>定价策略分析仪</h1>
+      </header>
+
+      <div class="content">
+        <!-- x: 原售价 -->
+        <div class="form-group">
+          <label>原售价 (¥)</label>
+          <i class='bx bx-dollar'></i>
+          <input type="number" id="input-price" step="0.01" min="0" placeholder="输入商品原价">
+        </div>
+        <!-- C: 目标关税率 -->
+        <div class="form-group">
+          <label>目标关税率 (%)</label>
+          <i class='bx bx-percent'></i>
+          <input type="number" id="input-duty" step="0.01" min="0" placeholder="输入目标关税率">
+        </div>
+        <!-- D: 原利润率 -->
+        <div class="form-group">
+          <label>原利润率 (%)</label>
+          <i class='bx bx-trending-up'></i>
+          <input type="number" id="input-old-profit" step="0.01" min="0" max="100" placeholder="当前利润率">
+        </div>
+        <!-- E: 目标利润率 -->
+        <div class="form-group">
+          <label>目标利润率 (%)</label>
+          <i class='bx bx-target-lock'></i>
+          <input type="number" id="input-new-profit" step="0.01" min="0" max="100" placeholder="期望利润率">
+        </div>
+        <!-- F: 现有关税率 -->
+        <div class="form-group">
+          <label>现有关税率 (%)</label>
+          <i class='bx bx-coin-stack'></i>
+          <input type="number" id="input-current-duty" step="0.01" min="0" max="100" placeholder="当前关税率">
+        </div>
+
+        <div class="full-width">
+          <button class="btn" id="btn-calc">
+            <i class='bx bx-calculator'></i>立即计算
+          </button>
+          <button class="btn" id="btn-show-formula">
+            <i class='bx bx-math'></i>查看公式
+          </button>
+        </div>
+      </div>
+
+      <!-- 计算结果 -->
+      <div class="result" id="result">
+        <div class="result-grid">
+          <div class="result-item">
+            <p>原抽佣率</p>
+            <span id="out-A">--%</span>
+          </div>
+          <div class="result-item">
+            <p>新抽佣率</p>
+            <span id="out-B">--%</span>
+          </div>
+          <div class="result-item">
+            <p>目标定价</p>
+            <span id="out-Y">--</span>
+          </div>
+          <div class="result-item">
+            <p>售价差额</p>
+            <span id="out-delta">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 函数图 -->
+      <div id="chart-container">
+        <canvas id="price-chart"></canvas>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 公式弹窗 -->
+  <div class="modal-mask" id="modal-mask">
+    <div class="modal">
+      <h3>计算公式</h3>
+      <p style="line-height:1.6; text-align:center;">
+        <span style="border-bottom:2px solid var(--text); padding:0 6px;">
+          原售价 × (1 − 原利润率 − 原抽佣率 − 0.15 × 现有关税率)
+        </span><br>
+        <span style="padding:0 6px;">
+          1 − 新抽佣率 − 0.15 × 目标关税率 − 目标利润率
+        </span>
+      </p>
+      <button class="btn-close" id="btn-close">关闭</button>
+    </div>
+  </div>
+
+  <script>
+    // 根据售价返回抽佣率 A 或 B
+    function calcCommission(price) {
+      if (price < 15) return 0.05;
+      if (price < 20) return 0.10;
+      return 0.17;
+    }
+
+    // 迭代计算 Y：新增参数 F（现有关税率）
+    function computeY(x, C, D, E, F) {
+      const A = calcCommission(x);
+      let B = 0.05, y = x;
+      for (let i = 0; i < 50; i++) {
+        y = x * (1 - D - A - 0.15 * F) / (1 - B - 0.15 * C - E);
+        const newB = calcCommission(y);
+        if (Math.abs(newB - B) < 1e-6) break;
+        B = newB;
+      }
+      return { A, B, y };
+    }
+
+    let priceChart = null;
+    const ctx = document.getElementById('price-chart').getContext('2d');
+
+    // 计算按钮事件
+    document.getElementById('btn-calc').onclick = () => {
+      const x = parseFloat(document.getElementById('input-price').value);
+      const C = parseFloat(document.getElementById('input-duty').value) / 100;
+      const D = parseFloat(document.getElementById('input-old-profit').value) / 100;
+      const E = parseFloat(document.getElementById('input-new-profit').value) / 100;
+      const F = parseFloat(document.getElementById('input-current-duty').value) / 100;
+
+      if ([x, C, D, E, F].some(v => isNaN(v))) {
+        alert('请完整填写所有输入项');
+        return;
+      }
+
+      // 计算并展示结果
+      const { A, B, y } = computeY(x, C, D, E, F);
+      document.getElementById('out-A').textContent = (A * 100).toFixed(1) + '%';
+      document.getElementById('out-B').textContent = (B * 100).toFixed(1) + '%';
+      document.getElementById('out-Y').textContent = '¥' + y.toFixed(2);
+      document.getElementById('out-delta').textContent = '¥' + (y - x).toFixed(2);
+      document.getElementById('result').style.display = 'block';
+
+      // 重新生成函数图数据
+      const labels = [], data = [];
+      for (let p = 0; p <= 50; p++) {
+        const { y: yy } = computeY(x, C, D, p/100, F);
+        labels.push(p + '%');
+        data.push(yy);
+      }
+
+      // 销毁旧图并绘制新图
+      if (priceChart) priceChart.destroy();
+      priceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: '目标价',
+            data,
+            borderColor: 'var(--accent)',
+            backgroundColor: 'rgba(99,102,241,0.05)',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                title: ctx => '利润率: ' + ctx[0].label,
+                label: ctx => `目标价: ¥${ctx.raw.toFixed(2)}`
+              }
+            },
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { color: '#e2e8f0' },
+              title: { display: true, text: '目标利润率 (%)', color: '#64748b' }
+            },
+            y: {
+              grid: { color: '#e2e8f0' },
+              title: { display: true, text: '建议定价 (¥)', color: '#64748b' },
+              ticks: { callback: v => '¥' + v }
+            }
+          },
+          interaction: { mode: 'nearest', intersect: false }
+        }
+      });
+
+      document.getElementById('chart-container').style.display = 'block';
+    };
+
+    // 公式弹窗逻辑
+    const mask = document.getElementById('modal-mask');
+    document.getElementById('btn-show-formula').onclick = () => { mask.style.display = 'flex'; };
+    document.getElementById('btn-close').onclick = () => { mask.style.display = 'none'; };
+    mask.onclick = e => { if (e.target === mask) mask.style.display = 'none'; };
+  </script>
+</body>
+</html>

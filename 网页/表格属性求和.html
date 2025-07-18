@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 文件求和</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+<!--            background: linear-gradient(135deg, #4facfe, #00f2fe);-->
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .file-input {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .file-input input {
+            display: none;
+        }
+
+        .file-input label {
+            background: #fff;
+            color: #007bff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .file-input label:hover {
+            background: #007bff;
+            color: #fff;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .btn {
+            background: #ff6b6b;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+            width: 100%;
+            text-align: center;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #ff4757;
+        }
+
+        #downloadLink {
+            display: none;
+            background: #2ed573;
+            text-decoration: none;
+        }
+
+        #downloadLink:hover {
+            background: #1e90ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>表格属性求和</h2>
+
+        <div class="file-input">
+            <input type="file" id="fileInput" accept=".xlsx, .xls">
+            <label for="fileInput">选择 Excel 文件</label>
+            <span class="file-name">未选择文件</span>
+        </div>
+
+        <button class="btn" onclick="processExcel()">处理文件</button>
+        <a id="downloadLink" class="btn" download="processed.xlsx">下载处理后的文件</a>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function() {
+            const fileName = this.files.length ? this.files[0].name : "未选择文件";
+            document.querySelector('.file-name').textContent = fileName;
+        });
+
+        function processExcel() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert("请先选择一个Excel文件！");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                if (!workbook.Sheets["Sheet1"] || !workbook.Sheets["Sheet2"]) {
+                    alert("Excel 文件必须包含 Sheet1 和 Sheet2！");
+                    return;
+                }
+
+                const sheet1 = XLSX.utils.sheet_to_json(workbook.Sheets["Sheet1"], { header: 1 });
+                const sheet2 = XLSX.utils.sheet_to_json(workbook.Sheets["Sheet2"], { header: 1 });
+
+                if (sheet1.length < 2 || sheet2.length < 1) {
+                    alert("Sheet1 需要至少包含标题行，Sheet2 需要至少包含一个关键词！");
+                    return;
+                }
+
+                const words = sheet2.map(row => row[0]).filter(Boolean);
+                const headers = sheet1[0];
+                const sheet1Data = sheet1.slice(1).map(row => [String(row[0] || '').trim(), row.slice(1)]);
+
+                const results = [headers];
+
+                words.forEach((word, idx) => {
+                    let matchedRows = sheet1Data.filter(([name]) => name.includes(word)).map(([, values]) => values);
+                    let sums = new Array(headers.length - 1).fill(0);
+
+                    matchedRows.forEach(row => {
+                        row.forEach((val, col) => {
+                            sums[col] += parseFloat(val) || 0;
+                        });
+                    });
+
+                    results.push([word, ...sums]);
+                });
+
+                const newSheet = XLSX.utils.aoa_to_sheet(results);
+                workbook.Sheets["Sheet1"] = newSheet;
+                const newWorkbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(newWorkbook, newSheet, "Sheet1");
+
+                const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([wbout], { type: "application/octet-stream" });
+                const url = URL.createObjectURL(blob);
+
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = url;
+                downloadLink.style.display = "inline-block";
+                downloadLink.innerText = "下载处理后的文件";
+            };
+
+            reader.readAsArrayBuffer(fileInput.files[0]);
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>娜娜表格整理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+        #result {
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>娜娜表格整理</h1>
+    <div class="container">
+        <input type="file" id="fileInput" accept=".xlsx" />
+        <button class="btn" id="processButton">整理表格</button>
+        <a id="downloadLink" class="btn" style="display: none;">下载文件</a>
+        <div id="result"></div>
+    </div>
+    <script>
+        // 格式化数字为千分位格式
+        const formatNumber = (num) => {
+            return new Intl.NumberFormat("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }).format(num);
+        };
+
+        // 解析单元格内容
+        function parseCellContent(cellContent) {
+            let leixing = "";
+            let name = "未知";
+            let money = 0.0;
+
+            try {
+                leixing = cellContent.split("于")[1]?.substring(8, 10) || "未知";
+            } catch {
+                leixing = "未知";
+            }
+
+            try {
+                const nameStart = cellContent.indexOf("对方为") + "对方为".length;
+                const nameEnd = cellContent.indexOf("(账号");
+                if (nameStart > -1 && nameEnd > -1) {
+                    name = cellContent.substring(nameStart, nameEnd).trim();
+                } else {
+                    const feeStart = cellContent.indexOf("(") + 1;
+                    const feeType = cellContent.substring(feeStart, feeStart + 4);
+                    if (feeType === "网银收费") {
+                        name = "手续费";
+                    } else if (feeType === "其他批量") {
+                        name = "未知(疑似回单费用)";
+                    }
+                }
+            } catch {
+                name = "未知";
+            }
+
+            try {
+                const moneyStart = cellContent.indexOf("人民币") + "人民币".length;
+                const moneyEnd = cellContent.indexOf("当前余额");
+                if (moneyStart > -1 && moneyEnd > -1) {
+                    money = parseFloat(cellContent.substring(moneyStart, moneyEnd).trim().replace(/,/g, "")) || 0.0;
+                }
+            } catch {
+                money = 0.0;
+            }
+
+            return { leixing, name, money: money.toFixed(2) }; // 保留两位小数
+        }
+
+        // 处理上传的 XLSX 文件
+        async function processFile(file) {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                    const processedData = [["Name", "Leixing", "Money", "支取汇总", "收入汇总"]];
+                    const summary = [["Name", "Leixing", "Total Money"]];
+
+                    let zhiQuTotal = 0.0;
+                    let shouRuTotal = 0.0;
+                    const summaryDict = {};
+
+                    rows.forEach((row, rowIndex) => {
+                        if (!row[0]) return; // 跳过空行
+                        const { leixing, name, money } = parseCellContent(row[0]);
+                        const formattedMoney = formatNumber(money); // 格式化金额
+                        processedData.push([name, leixing, formattedMoney, "", ""]);
+
+                        if (leixing === "支取") {
+                            zhiQuTotal += parseFloat(money);
+                        } else if (leixing === "收入") {
+                            shouRuTotal += parseFloat(money);
+                        }
+
+                        const key = `${name}-${leixing}`;
+                        summaryDict[key] = (summaryDict[key] || 0) + parseFloat(money);
+                    });
+
+                    processedData[1][3] = formatNumber(zhiQuTotal);
+                    processedData[1][4] = formatNumber(shouRuTotal);
+
+                    Object.entries(summaryDict).forEach(([key, totalMoney]) => {
+                        const [name, leixing] = key.split("-");
+                        summary.push([name, leixing, formatNumber(totalMoney)]);
+                    });
+
+                    const incomeData = summary.filter(row => row[1] === "收入");
+                    const outputData = summary.filter(row => row[1] === "支取");
+
+                    const totalIncome = incomeData.reduce((sum, row) => sum + parseFloat(row[2].replace(/,/g, "")), 0);
+                    const totalOutput = outputData.reduce((sum, row) => sum + parseFloat(row[2].replace(/,/g, "")), 0);
+
+                    const incomeDetails = incomeData.map(row => `${row[0]} ${row[2]}元`).join(", ");
+                    const outputDetails = outputData.map(row => `${row[0]} ${row[2]}元`).join(", ");
+
+                    const summaryMessage = `收款合计：${formatNumber(totalIncome)}元（${incomeDetails}）`;
+                    const summaryMessage2 = `付款合计：${formatNumber(totalOutput)}元（${outputDetails}）`;
+
+                    summary[0] = ['Name', 'Leixing', 'Total Money', summaryMessage, summaryMessage2];
+
+                    const newWorkbook = XLSX.utils.book_new();
+                    const processedSheet = XLSX.utils.aoa_to_sheet(processedData);
+                    const summarySheet = XLSX.utils.aoa_to_sheet(summary);
+
+                    XLSX.utils.book_append_sheet(newWorkbook, processedSheet, "整理后的数据");
+                    XLSX.utils.book_append_sheet(newWorkbook, summarySheet, "分类汇总");
+
+                    const wbout = XLSX.write(newWorkbook, { bookType: "xlsx", type: "array" });
+                    const blob = new Blob([wbout], { type: "application/octet-stream" });
+
+                    const downloadLink = document.getElementById("downloadLink");
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.download = "processed_file.xlsx";
+                    downloadLink.style.display = "inline-block";
+                    document.getElementById("result").textContent = "文件处理完成！";
+                } catch (error) {
+                    console.error("Error processing the file:", error);
+                    document.getElementById("result").textContent = "文件处理错误！";
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        document.getElementById("processButton").addEventListener("click", () => {
+            const fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length === 0) {
+                alert("Please select a file to process.");
+                return;
+            }
+            processFile(fileInput.files[0]);
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</body>
+</html>
