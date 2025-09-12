@@ -82,8 +82,15 @@
       vertical-align: middle;
       accent-color: #3eb5db;
     }
+    #canvas-size-options input[type='number'] {
+      width: 90px;
+      padding: 2px 6px;
+      margin: 0 4px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+    }
 
-    /* 新增德语选项样式 */
     #lang-options {
       width: 100%;
       margin-bottom: 0.7rem;
@@ -173,15 +180,9 @@
       background: linear-gradient(90deg, #49d688 0%, #23c491 100%);
       box-shadow: 0 4px 14px rgba(72, 214, 136, 0.09);
     }
-    button#btnDownload:hover {
-      filter: brightness(1.09) saturate(1.1);
-    }
     button#btnCopy {
       background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
       box-shadow: 0 4px 14px rgba(243, 156, 18, 0.09);
-    }
-    button#btnCopy:hover {
-      filter: brightness(1.09) saturate(1.1);
     }
     button .fa {
       margin-right: 11px;
@@ -226,111 +227,7 @@
       backdrop-filter: blur(6px);
       border: 1px solid rgba(255,255,255,0.3);
     }
-
-    #copyToast.show {
-      visibility: visible;
-      opacity: 1;
-      bottom: 70px;
-    }
-
-    #copyToast .toast-icon {
-      margin-right: 12px;
-      font-size: 24px;
-      animation: bounce 0.8s;
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.6); }
-      70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-10px); }
-      50% { transform: translateY(0); }
-      70% { transform: translateY(-5px); }
-    }
-
-    @media (max-width: 1020px) {
-      .container {
-        padding: 1.2rem 0.3rem;
-      }
-      textarea {
-        font-size: 15.5px;
-        padding-left: 1.1rem;
-      }
-      #copyToast {
-        min-width: 180px;
-        padding: 14px;
-        font-size: 15px;
-      }
-    }
-    @media (max-width: 768px) {
-      .container {
-        padding: 0.5rem 0.3rem 1rem 0.3rem;
-        border-radius: 0;
-        box-shadow: 0 4px 20px rgba(44, 62, 80, 0.12);
-      }
-      h2 {
-        font-size: 1.3rem;
-        padding-bottom: 0.4rem;
-      }
-      #canvas-size-options {
-        font-size: 0.98rem;
-        padding: 0.27em 0.7em;
-      }
-      #lang-options {
-        font-size: 0.95rem;
-        padding: 0.17em 0.6em;
-      }
-      textarea {
-        min-height: 96px;
-        font-size: 13.8px;
-      }
-      #controls button {
-        padding: 0.55rem 1.1rem 0.55rem 0.9rem;
-        font-size: 0.93rem;
-      }
-      canvas {
-        border-radius: 10px;
-      }
-      #copyToast {
-        min-width: 160px;
-        padding: 12px;
-        font-size: 14px;
-      }
-    }
-    @media (max-width: 520px) {
-      .container {
-        padding: 0.3rem 0.08rem 0.9rem 0.08rem;
-        min-width: unset;
-        width: 99vw;
-      }
-      #canvas-size-options {
-        padding: 0.2em 0.2em;
-        font-size: 0.94rem;
-      }
-      #lang-options {
-        font-size: 0.93rem;
-        padding: 0.13em 0.3em;
-      }
-      textarea {
-        padding-left: 0.8rem;
-      }
-      #controls {
-        gap: 0.4rem;
-      }
-      #copyToast {
-        min-width: 140px;
-        padding: 10px;
-        font-size: 13px;
-        bottom: 30px;
-      }
-      #copyToast.show {
-        bottom: 40px;
-      }
-    }
+    #copyToast.show { visibility: visible; opacity: 1; bottom: 70px; }
   </style>
 </head>
 <body>
@@ -350,6 +247,13 @@
         <input type="radio" name="canvas-size" value="2900x1300" />
         2900 x 1300
       </label>
+      <label>
+        <input type="radio" name="canvas-size" value="custom" id="customRadio" />
+        自定义:
+        <input type="number" id="customWidth" placeholder="宽(px)" />
+        x
+        <input type="number" id="customHeight" placeholder="高(px)" />
+      </label>
     </div>
     <!-- 新增德语选项 -->
     <div id="lang-options">
@@ -368,19 +272,13 @@ XXXL	148cm/58.27''	55cm/21.65''	85.5cm/33.66''</textarea>
     <div id="controls">
       <button id="btnRender"><i class="fa fa-magic"></i>生成图片</button>
       <button id="btnDownload" disabled><i class="fa fa-download"></i>下载图片</button>
-      <button id="btnCopy" disabled title="复制图片到剪切板"><i class="fa fa-copy"></i>复制图片</button>
+      <button id="btnCopy" disabled><i class="fa fa-copy"></i>复制图片</button>
     </div>
     <canvas id="canvas" width="2670" height="1375"></canvas>
   </div>
-
-  <!-- 复制成功提示元素 -->
-  <div id="copyToast">
-    <div class="toast-icon">✅</div>
-    <div>图片已复制到剪切板！</div>
-  </div>
+  <div id="copyToast"><div class="toast-icon">✅</div><div>图片已复制到剪切板！</div></div>
 
   <script>
-    // dom获取
     const textarea = document.getElementById('inputText');
     const btnRender = document.getElementById('btnRender');
     const btnDownload = document.getElementById('btnDownload');
@@ -390,135 +288,67 @@ XXXL	148cm/58.27''	55cm/21.65''	85.5cm/33.66''</textarea>
     const sizeRadios = document.getElementsByName('canvas-size');
     const copyToast = document.getElementById('copyToast');
     const deLangCheckbox = document.getElementById('deLang');
+    const customRadio = document.getElementById('customRadio');
+    const customWidth = document.getElementById('customWidth');
+    const customHeight = document.getElementById('customHeight');
 
     // 关键词德语映射表
-    const deDict = {
-      'size': 'Größe',
-      'waist': 'Taille',
-      'hip': 'Hüfte',
-      'length': 'Länge',
-      'bust': 'Brustumfang',
-      'shoulder': 'Schulter',
-      'sleeve': 'Ärmel',
-      'chest': 'Brust',
-      'thigh': 'Oberschenkel',
-      'bottoms': 'Hosen',
-      'height': 'Körpergröße',
-      'weight': 'Gewicht',
-      'shoulders': 'Schulter',
-      'hips': 'Hüfte',
-      'inseam': 'Innenbeinlänge',
-      'arm': 'Arm',
-      'leg': 'Bein',
-      'foot': 'Fuß',
-      'collar': 'Kragen',
-      'cuff': 'Manschette',
-      'hem': 'Saum',
-      'width': 'Breite',
-      'shoulder width': 'Schulterbreite',
-      'rise': 'Leibhöhe',
-      'outseam': 'Außenbeinlänge',
-      'underbust': 'Unterbrust',
-      's': 'S', 'm': 'M', 'l': 'L', 'xl': 'XL', 'xxl': 'XXL', 'xxxl': 'XXXL'
-      // 你可以继续补充其他常见表头
-    };
+    const deDict = { 'size': 'Größe','waist': 'Taille','hip': 'Hüfte','length': 'Länge','bust': 'Brustumfang','shoulder': 'Schulter','sleeve': 'Ärmel','chest': 'Brust','thigh': 'Oberschenkel','bottoms': 'Hosen','height': 'Körpergröße','weight': 'Gewicht','shoulders': 'Schulter','hips': 'Hüfte','inseam': 'Innenbeinlänge','arm': 'Arm','leg': 'Bein','foot': 'Fuß','collar': 'Kragen','cuff': 'Manschette','hem': 'Saum','width': 'Breite','shoulder width': 'Schulterbreite','rise': 'Leibhöhe','outseam': 'Außenbeinlänge','underbust': 'Unterbrust','s': 'S','m': 'M','l': 'L','xl': 'XL','xxl': 'XXL','xxxl': 'XXXL' };
 
-    // 获取当前所选尺寸
     function getSelectedSize() {
       for (const radio of sizeRadios) {
         if (radio.checked) {
           if (radio.value === '1600x1000') return { w: 1600, h: 1000 };
           else if (radio.value === '2900x1300') return { w: 2900, h: 1300 };
+          else if (radio.value === 'custom') {
+            const w = parseInt(customWidth.value) || 1000;
+            const h = parseInt(customHeight.value) || 1000;
+            return { w, h };
+          }
           else return { w: 2670, h: 1375 };
         }
       }
       return { w: 2670, h: 1375 };
     }
 
-    // 英文表头翻译为德语
     function translateHeaderToGerman(headerRow) {
-      // 只替换常见英文表头
       return headerRow.map(cell => {
-        // 忽略大小写并去除两端空格
         let key = cell.replace(/[^a-zA-Z]/g, '').toLowerCase();
-        // 特殊处理带空格的表头（如Shoulder Width）
-        if (cell.trim().toLowerCase() === 'shoulder width') {
-          key = 'shoulder width';
-        }
-        if (deDict[key]) {
-          return deDict[key];
-        }
-        return cell;
+        if (cell.trim().toLowerCase() === 'shoulder width') { key = 'shoulder width'; }
+        return deDict[key] || cell;
       });
     }
 
-    // 显示复制成功提示
     function showCopySuccess() {
       copyToast.classList.add('show');
-      setTimeout(() => {
-        copyToast.classList.remove('show');
-      }, 3000);
+      setTimeout(() => copyToast.classList.remove('show'), 3000);
     }
 
-    // 更改canvas尺寸并渲染
     function updateCanvasSizeAndRender() {
       const { w, h } = getSelectedSize();
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = w; canvas.height = h;
       renderTable(textarea.value, deLangCheckbox.checked);
     }
 
-    // 渲染表格函数
     function renderTable(text, isGermanHeader) {
-      const rows = text
-        .trim()
-        .split('\n')
-        .map((line) => line.trim().split(/\t| {2,}/).map((cell) => cell.trim()));
-
+      const rows = text.trim().split('\n').map(line => line.trim().split(/\t| {2,}/).map(cell => cell.trim()));
       if (rows.length === 0) return;
+      if (isGermanHeader) rows[0] = translateHeaderToGerman(rows[0]);
 
-      // 若选择德语，自动翻译第一行
-      if (isGermanHeader) {
-        rows[0] = translateHeaderToGerman(rows[0]);
-      }
-
-      const R = rows.length,
-        C = rows[0].length;
-      const W = canvas.width,
-        H = canvas.height;
+      const R = rows.length, C = rows[0].length;
+      const W = canvas.width, H = canvas.height;
       const rowH = H / R;
+      const colWidths = []; colWidths[0] = W * 0.15; for (let c = 1; c < C; c++) colWidths[c] = (W * 0.85) / (C - 1);
+      const colOffsets = []; colOffsets[0] = 0; for (let c = 1; c < C; c++) colOffsets[c] = colOffsets[c - 1] + colWidths[c - 1];
 
-      // 计算每列宽度：第一列15%，其余均分
-      const colWidths = [];
-      colWidths[0] = W * 0.15;
-      for (let c = 1; c < C; c++) {
-        colWidths[c] = (W * 0.85) / (C - 1);
-      }
-      const colOffsets = [];
-      colOffsets[0] = 0;
-      for (let c = 1; c < C; c++) {
-        colOffsets[c] = colOffsets[c - 1] + colWidths[c - 1];
-      }
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, W, H);
-
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
 
       let fontSize = Math.floor(rowH * 0.7);
       while (fontSize > 6) {
-        ctx.font = `${fontSize}px Arial`;
-        let ok = true;
-        for (let r = 0; r < R && ok; r++) {
-          for (let c = 0; c < C; c++) {
-            if (ctx.measureText(rows[r][c]).width > colWidths[c] * 0.8) {
-              ok = false;
-              break;
-            }
-          }
-        }
-        if (ok) break;
-        fontSize--;
+        ctx.font = `${fontSize}px Arial`; let ok = true;
+        for (let r = 0; r < R && ok; r++) for (let c = 0; c < C; c++) if (ctx.measureText(rows[r][c]).width > colWidths[c] * 0.8) { ok = false; break; }
+        if (ok) break; fontSize--;
       }
       ctx.font = `${fontSize}px Arial`;
 
@@ -526,84 +356,25 @@ XXXL	148cm/58.27''	55cm/21.65''	85.5cm/33.66''</textarea>
         const y = r * rowH;
         ctx.fillStyle = r === 0 ? '#2c3e50' : r % 2 ? '#f8f9fa' : '#e9ecef';
         ctx.fillRect(0, y, W, rowH);
-
         for (let c = 0; c < C; c++) {
           ctx.fillStyle = r === 0 ? '#ffffff' : '#2d3436';
           const x = colOffsets[c] + colWidths[c] / 2;
           ctx.fillText(rows[r][c], x, y + rowH / 2);
         }
       }
-
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      for (let r = 0; r <= R; r++) {
-        const y = r * rowH;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(W, y);
-        ctx.stroke();
-      }
-      for (let c = 0; c <= C; c++) {
-        const x = c === 0 ? 0 : colOffsets[c];
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, H);
-        ctx.stroke();
-      }
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+      for (let r = 0; r <= R; r++) { const y = r * rowH; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      for (let c = 0; c <= C; c++) { const x = c === 0 ? 0 : colOffsets[c]; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
     }
 
-    btnRender.addEventListener('click', () => {
-      updateCanvasSizeAndRender();
-      btnDownload.disabled = false;
-      btnCopy.disabled = false;
-    });
+    btnRender.addEventListener('click', () => { updateCanvasSizeAndRender(); btnDownload.disabled = false; btnCopy.disabled = false; });
+    btnDownload.addEventListener('click', () => { const link = document.createElement('a'); link.download = 'table.png'; link.href = canvas.toDataURL('image/png'); link.click(); });
+    btnCopy.addEventListener('click', async () => { try { canvas.toBlob(async (blob) => { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); showCopySuccess(); }); } catch (err) { alert('复制失败: ' + err); } });
 
-    btnDownload.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.download = 'table.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    });
+    customWidth.addEventListener('input', () => { customRadio.checked = true; });
+    customHeight.addEventListener('input', () => { customRadio.checked = true; });
 
-    btnCopy.addEventListener('click', async () => {
-      if (!navigator.clipboard) {
-        alert('当前浏览器不支持剪切板复制功能');
-        return;
-      }
-      try {
-        const blob = await new Promise((resolve) =>
-          canvas.toBlob(resolve, 'image/png')
-        );
-        if (!blob) {
-          alert('图片转换失败');
-          return;
-        }
-        const item = new ClipboardItem({ 'image/png': blob });
-        await navigator.clipboard.write([item]);
-        showCopySuccess();
-      } catch (err) {
-        console.error('复制失败:', err);
-        alert('复制失败，请确保是在安全环境（HTTPS）下，且浏览器支持 Clipboard API');
-      }
-    });
-
-    // 当切换单选按钮时，自动同步画布比例并重新渲染
-    for (const radio of sizeRadios) {
-      radio.addEventListener('change', () => {
-        updateCanvasSizeAndRender();
-      });
-    }
-
-    // 勾选德语表头时自动重绘
-    deLangCheckbox.addEventListener('change', () => {
-      updateCanvasSizeAndRender();
-    });
-
-    window.onload = () => {
-      updateCanvasSizeAndRender();
-      btnDownload.disabled = false;
-      btnCopy.disabled = false;
-    };
+    updateCanvasSizeAndRender();
   </script>
 </body>
 </html>

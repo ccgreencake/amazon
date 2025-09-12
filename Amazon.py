@@ -259,12 +259,15 @@ def amazon(source_file,CiBiao,account,TG_VP,price,shipping,leixing,style,fangfa,
         if 'weiku' in CiBiao or 'sweatpant' in CiBiao or 'jogger' in CiBiao:
             values_item = ['athletic-sweatpants','casual-pants','athletic-dance-pants','athletic-maternity-pants','athletic-pants','athletic-cricket-pants','athletic-track-pants']
             df_new['item_type'] = [values_item[i % len(values_item)] for i in range(length)]
+        elif 'tactical pants' in CiBiao or 'cargo pants' in CiBiao:
+            values_item = ['hiking-pants', 'casual-pants', 'military-pants']
+            df_new['item_type'] = [values_item[i % len(values_item)] for i in range(length)]
         else:
             df_new['item_type'] = np.nan
     df_new['neck_type'] = np.nan
     df_new['sleeve_type'] = np.nan
     if 'cargo' in CiBiao or 'tactical' in CiBiao:
-        df_new['sport1'] = ['Tactical and Military'] * length
+        df_new['sport1'] = ['Tactical & Military'] * length
         df_new['sport2'] = ['Hiking'] * length
     elif 'tennis' in CiBiao or 'golf' in CiBiao:
 
@@ -272,7 +275,7 @@ def amazon(source_file,CiBiao,account,TG_VP,price,shipping,leixing,style,fangfa,
         df_new['sport2'] = ['Golf'] * length
     else:
         df_new['sport1'] = ['Outdoor Lifestyle'] * length
-        df_new['sport2'] = ['Walk'] * length
+        df_new['sport2'] = ['Walking'] * length
 
 
     if TG_VP == 'P':
@@ -286,16 +289,21 @@ def amazon(source_file,CiBiao,account,TG_VP,price,shipping,leixing,style,fangfa,
     df_new['style'] = [style] * length
     df_new['key'] = pinjie.pinjie1(length,CiBiao,small_title,fangfa)
     df_new['weave_type'] = ['Knit'] * length
-    if TG_VP == "P":
+    if TG_VP == "P" :
+    # if True:
         for i in range(5):
             name = 'point' + str(i)
             df_new[name] = [point5[i]] * length
     else:
         df_new['p1'] = [p5[0]] * length
         df_new['p2'] = [p5[1]] * length
-        for i in range(3):
-            name = 'point'+str(i)
-            df_new[name] = [point5[i]] * length
+        df_new['p3'] = [p5[2]] * length
+        df_new['p4'] = [p5[3]] * length
+        df_new['p5'] = [p5[4]] * length
+
+        # for i in range(3):
+        #     name = 'point'+str(i)
+        #     df_new[name] = [point5[i]] * length
 
 
     df_new['color'] = new_color
@@ -328,7 +336,8 @@ def amazon(source_file,CiBiao,account,TG_VP,price,shipping,leixing,style,fangfa,
     df_new['leg_style'] = [leg_style] * length
     df_new.loc[0, 'leg_style'] = np.nan
 
-    if 'cargo' in CiBiao or 'tactical' in CiBiao:
+    # if 'cargo' in CiBiao or 'tactical' in CiBiao:
+    if 'tactical' in CiBiao:
         values = ['water_resistant','Waterproof']
         df_new['water_resistance_level'] = [values[i % len(values)] for i in range(length)]
     else:
@@ -374,8 +383,11 @@ def amazon(source_file,CiBiao,account,TG_VP,price,shipping,leixing,style,fangfa,
             df_new['fabric_type'] = ['71%Polyester,18%Cotton,11%Spandex']*length
     # df_new['import_designation'] = [p5[3]]*length
     df_new['import_designation'] = ['Imported']*length
-
-    product_description = utils.description("html.txt", size_chart, p5)
+    if TG_VP == "C" or TG_VP == "P":
+        product_description = utils.description("html.txt", size_chart, p5)
+    elif TG_VP == "T":
+        # product_description = pinjie.pinjie3(length,CiBiao,account)
+        product_description = utils.description("html.txt", size_chart, p5)
 
 
 
@@ -411,18 +423,32 @@ def amazon(source_file,CiBiao,account,TG_VP,price,shipping,leixing,style,fangfa,
         else:
             continue
 
-    for i in range(a):
-        array_name = f"Array{i+1}"  # 创建数组名称
-        start_index = i * length  # 计算起始索引
-        end_index = (i + 1) * length  # 计算结束索引
-        array_data = zi[start_index:end_index].reset_index(drop=True)  # 提取32个元素并重置索引
-        df_new[array_name] = array_data  # 将数据填充到新的数据框架的不同列中
+    # 埋词
+    # for i in range(a):
+    #     array_name = f"Array{i+1}"  # 创建数组名称
+    #     start_index = i * length  # 计算起始索引
+    #     end_index = (i + 1) * length  # 计算结束索引
+    #     array_data = zi[start_index:end_index].reset_index(drop=True)  # 提取32个元素并重置索引
+    #     df_new[array_name] = array_data  # 将数据填充到新的数据框架的不同列中
 
-
-
-
-
-
+    # 不埋词
+    df_new['model'] = ['Bakgeerle'] * length
+    df_new['model_name'] = ['Bakgeerle'] * length
+    df_new['closure_type'] = ['Elastic'] * length
+    df_new['inner_material_type'] = ['Polyester'] * length
+    df_new['outer_material_type1'] = ['Polyester Blend'] * length
+    df_new['outer_material_type2'] = ['Cotton Blend'] * length
+    df_new['outer_material_type3'] = ['Polyester'] * length
+    df_new['outer_material_type4'] = ['Polyester'] * length
+    df_new['outer_material_type5'] = ['Polyester'] * length
+    df_new['part_number'] = ['Bakgeerle'] * length
+    df_new['occasion_type1'] = ['Casual'] * length
+    df_new['occasion_type2'] = ['Casual'] * length
+    df_new['occasion_type3'] = ['Casual'] * length
+    df_new['occasion_type4'] = ['Casual'] * length
+    df_new['occasion_type5'] = ['Casual'] * length
+    df_new['collection_name'] = ['All'] * length
+    df_new['shaft_style_type'] = [''] * length
 
     df_new['product_description'] = product_description
     print('大描述长度：'+str(len(product_description)))
@@ -452,7 +478,7 @@ def amazon(source_file,CiBiao,account,TG_VP,price,shipping,leixing,style,fangfa,
         for i in range(15):
             name = 'bai'+str(i)
             df_new[name] = np.nan
-    elif leixing == 'dress' or leixing == 'nightgownnightshirt' or leixing == 'sweatshirt' or leixing == 'sweater' or leixing == 'coat':
+    elif leixing == 'dress' or leixing == 'nightgownnightshirt' or leixing == 'sweatshirt' or leixing == 'sweater' or leixing == 'coat' or leixing == "suit" or leixing == "tracksuit":
         for i in range(5):
             name = 'bai'+str(i)
             df_new[name] = np.nan
@@ -488,8 +514,8 @@ def amazon(source_file,CiBiao,account,TG_VP,price,shipping,leixing,style,fangfa,
 
 
 
-
-    if zuhe == 1:
+    # 是否使用组合图
+    if zuhe == 1 or TG_VP == "P" or TG_VP == "C":
         df_new['main_img'] = main_img
     else:
         df_new['main_img'] = main_img

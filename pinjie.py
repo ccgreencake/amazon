@@ -289,7 +289,7 @@ def pinjie1(num,cibiao,title,fangfa):
                     "cozy",
                     "trendy",
                     "loose fit",
-                    "summer",
+                    "winter",
                     "lightweight"
                     "oversized",
                     "breathable",
@@ -300,10 +300,14 @@ def pinjie1(num,cibiao,title,fangfa):
                 shuxing = shuxing+shuxing[:]+shuxing[:]+shuxing[:]
                 n=0
                 for text in random.sample(texts, len(texts)):  # 随机打乱texts顺序
-                    if total_length + len(text) + 3 + len(shuxing[n]) + len(shuxing[n+1]) <= changdu:  # +3是为了加上空格
-                        random_string += shuxing[n] + " " + shuxing[n+1] + " " + text + " "  # 添加文本片段和空格
-                        total_length += len(text) + 3 + len(shuxing[n]) + len(shuxing[n+1])
-                        n+=2
+                    # if total_length + len(text) + 3 + len(shuxing[n]) + len(shuxing[n+1]) <= changdu:  # +3是为了加上空格
+                    #     random_string += shuxing[n] + " " + shuxing[n+1] + " " + text + " "  # 添加文本片段和空格
+                    #     total_length += len(text) + 3 + len(shuxing[n]) + len(shuxing[n+1])
+                    #     n+=2
+                    if total_length + len(text) + 2 + len(shuxing[n]) <= changdu:  # +3是为了加上空格
+                        random_string += shuxing[n] + " "  + text + " "  # 添加文本片段和空格
+                        total_length += len(text) + 2 + len(shuxing[n])
+                        n+=1
                     else:
                         flag= False
                         break  # 退出内层循环，保持当前random_string
@@ -335,6 +339,54 @@ def pinjie1(num,cibiao,title,fangfa):
 def pinjie2(num, cibiao, flag):
     ws = wb[cibiao]
     changdu = 500
+    texts = [cell.value.strip() for cell in ws['A'] if cell.value and isinstance(cell.value, str)]
+    texts.pop(0)
+    if len(texts) < 1:
+        print("工作表中没有足够的文本数据。")
+    else:
+        random_strings = []
+        for _ in range(num):
+            if flag == 'LIANG' or flag == "YOULE":
+                random_string = "Bakgeerle "
+                total_length = 10
+            elif flag == 'lc':
+                random_string = "lcyhony "
+                total_length = 8
+            else:
+                random_string = ""
+                total_length = 0
+            flag = True
+            while total_length < changdu and flag:
+                for text in random.sample(texts, len(texts)):
+                    if total_length + len(text) + 1 <= changdu:
+                        random_string += text + " "
+                        total_length += len(text) + 1
+                    else:
+                        flag = False
+                        break
+            random_string = random_string.strip()
+            # 第一次处理重复单词
+            random_string = re.sub(r'\b(\w+)\s+\1\b', r'\1', random_string)
+            flag = True
+            # 检查长度是否小于500，如果是，则继续拼接
+            if len(random_string) < changdu:
+                while total_length < changdu and flag:
+                    for text in random.sample(texts, len(texts)):
+                        if len(random_string) + len(text) + 1 <= changdu:
+                            random_string += " " + text
+                            total_length += len(text) + 1
+                        else:
+                            flag = False
+                            break
+            random_string = random_string.strip()
+            # 第二次处理重复单词
+            random_string = re.sub(r'\b(\w+)\s+\1\b', r'\1', random_string)
+            random_strings.append(random_string)
+    return random_strings
+
+def pinjie3(num, cibiao, flag):
+    ws = wb[cibiao]
+    changdu = 2000
     texts = [cell.value.strip() for cell in ws['A'] if cell.value and isinstance(cell.value, str)]
     texts.pop(0)
     if len(texts) < 1:
@@ -380,10 +432,11 @@ def pinjie2(num, cibiao, flag):
             random_strings.append(random_string)
     return random_strings
 
+
 def pinjiedaochu(num,cibiao,flag):
     ws = wb[cibiao]
     # changdu=250
-    changdu = 500
+    changdu = 2000
     # 读取第一列的所有文本
     texts = [cell.value.strip() for cell in ws['A'] if cell.value and isinstance(cell.value, str)]
     texts.pop(0)
@@ -433,7 +486,7 @@ def pinjiedaochu(num,cibiao,flag):
     print(f"文件已保存: {new_excel_file}")
 
     # 使用WPS打开Excel文件（如果需要）
-    wps_path = r'C:\Users\Administrator\AppData\Local\Kingsoft\WPS Office\ksolaunch.exe'
+    wps_path = r'F:\APP\wps\WPS Office\ksolaunch.exe'
     subprocess.call([wps_path, new_excel_file])
     print(f"文件 '{new_excel_file}' 已使用WPS打开。")
-# pinjiedaochu(10,'weiku','li')
+# pinjiedaochu(215,'men uv shirts','li')

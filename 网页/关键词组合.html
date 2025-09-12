@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>关键词组合工具</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style type="text/css">
+        :root {
+            --primary-color: #409EFF;
+            --secondary-color: #67C23A;
+            --danger-color: #F56C6C;
+            --warning-color: #E6A23C;
+            --info-color: #909399;
+            --light-bg: #f4f6f9;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        #app {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), #5DADE2);
+            border-radius: var(--border-radius);
+            color: white;
+            box-shadow: var(--card-shadow);
+        }
+
+        .app-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .app-header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .mt-10 { margin-top: 10px !important; }
+        .mt-5 { margin-top: 5px !important; }
+        .mb-5 { margin-bottom: 5px !important; }
+        .mb-10 { margin-bottom: 10px !important; }
+        .mb-20 { margin-bottom: 20px !important; }
+
+        .el-card {
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .el-card:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-2px);
+        }
+
+        .el-card__header {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #ebeef5;
+            font-weight: 600;
+            color: #303133;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .el-card__header span {
+            font-size: 16px;
+        }
+
+        .el-card__body {
+            padding: 20px;
+        }
+
+        .el-tag {
+            border-radius: 4px;
+            padding: 0 8px;
+            height: 28px;
+            line-height: 26px;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .el-tag+.el-tag { margin-left: 10px; }
+
+        .edit {
+            display: flex;
+            height: 300px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            border: 1px solid #DCDFE6;
+        }
+
+        .edit-content {
+            padding:10px 8px;
+            width:100%;
+            height:100%;
+            font-size: 14px;
+            line-height: 24px;
+            color: #333;
+            font-family: 'Consolas', 'Monaco', monospace;
+            border: none;
+            background: #fff;
+            box-sizing: border-box;
+            outline:none;
+            resize: none;
+            transition: all 0.2s;
+        }
+
+        .edit-content:focus {
+            background-color: #f9f9f9;
+        }
+
+        .left-box {
+            width: 40px;
+            height:100%;
+            text-align:left;
+            background-color: #f5f7fa;
+        }
+
+        .left-num {
+            padding:10px 4px;
+            height:100%;
+            width: 100%;
+            line-height: 24px;
+            font-size: 12px;
+            text-align: right;
+            color: #909399;
+            font-weight: bold;
+            resize: none;
+            outline:none;
+            overflow-y: hidden;
+            overflow-x: hidden;
+            border: 0;
+            background: transparent;
+            box-sizing: border-box;
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .settings-label {
+            min-width: 100px;
+            font-weight: 500;
+            color: #606266;
+        }
+
+        .el-input-number {
+            width: 150px;
+        }
+
+        .el-input__inner {
+            border-radius: 4px;
+        }
+
+        .el-textarea__inner {
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .result-item {
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .el-button {
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .el-button--primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .el-button--primary:hover {
+            background-color: #66b1ff;
+            border-color: #66b1ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(64, 158, 255, 0.3);
+        }
+
+        .export-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .export-controls .el-input {
+            width: 80px;
+        }
+
+        .keyword-card {
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .add-keyword-btn {
+            width: 100%;
+            margin-top: 10px;
+            border-style: dashed;
+            color: var(--primary-color);
+            background-color: rgba(64, 158, 255, 0.1);
+        }
+
+        .add-keyword-btn:hover {
+            background-color: rgba(64, 158, 255, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #909399;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #C0C4CC;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #909399;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .el-col-md-12 {
+                width: 100%;
+            }
+
+            .settings-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .settings-label {
+                margin-bottom: 5px;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="app-header">
+            <h1><i class="fas fa-key"></i> 关键词组合工具</h1>
+        </div>
+
+        <el-row :gutter="20">
+            <!-- 左侧关键词输入框 -->
+            <el-col :md="12">
+                <el-row :gutter="10">
+                    <el-col :md="24" class="mb-10 keyword-card" v-for="(word, i) in list" :key="i">
+                        <el-card class="box-card">
+                            <div slot="header" class="clearfix">
+                                <span><i class="fas fa-tags"></i> {{ word.title }}</span>
+                                <el-button type="text" icon="el-icon-delete" @click="removeKeyword(i)" style="color: var(--danger-color);"></el-button>
+                            </div>
+                            <div class="edit">
+                                <div class="left-box"><textarea class="left-num" :id="'left-num-' + i" wrap="off" cols="2" disabled v-model="word.lineNumber"></textarea></div>
+                                <textarea :onscroll="'document.getElementById(\'left-num-' + i + '\').scrollTop = this.scrollTop;'" v-model="word.content" wrap="off" class="edit-content" rows="20" @input="handleTextareaInput($event, word)" :placeholder="'请输入' + word.title + '，每行一个'"></textarea>
+                            </div>
+                        </el-card>
+                    </el-col>
+                    <el-col :md="24">
+                        <el-button class="add-keyword-btn" icon="el-icon-plus" @click="addKeyword">添加关键词组</el-button>
+                    </el-col>
+                </el-row>
+            </el-col>
+
+            <!-- 右侧结果 & 设置 -->
+            <el-col :md="12">
+                <el-card class="box-card">
+                    <div slot="header" class="clearfix">
+                        <span><i class="fas fa-cog"></i> 生成设置</span>
+                    </div>
+
+                    <div class="settings-row">
+                        <div class="settings-label">字符上限：</div>
+                        <el-input-number v-model.number="maxLength" :min="1" :max="5000" ></el-input-number>
+                    </div>
+
+                    <div class="settings-row">
+                        <div class="settings-label">字符下限：</div>
+                        <el-input-number v-model.number="minLength" :min="0" :max="5000"></el-input-number>
+                    </div>
+
+                    <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
+                        <div class="settings-label">前缀（每行一个）：</div>
+                        <el-input type="textarea" v-model="prefixText" placeholder="输入前缀，每行一个" :rows="4" style="width: 100%; margin-top: 5px;"></el-input>
+                    </div>
+
+                    <div slot="header" class="clearfix" style="margin-top: 20px;">
+                        <span><i class="fas fa-magic"></i> 生成结果</span>
+                    </div>
+
+                    <div v-if="titles.length === 0" class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>点击"生成"按钮创建关键词组合</p>
+                    </div>
+
+                    <div v-else>
+                        <div class="result-item" v-for="(title, index) in titles" :key="index">
+                            <el-input v-model="titles[index]" class="mt-5" :maxlength="maxLength" show-word-limit>
+                                <template slot="prepend">{{ index + 1 }}.</template>
+                            </el-input>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <el-button type="primary" @click="randomGenerate" icon="el-icon-refresh-right">生成</el-button>
+                        <download-excel :data="json_data" :fields="json_fields" style="display: inline-block;">
+                            <el-button type="success" icon="el-icon-download" @click="handleExport">导出</el-button>
+                        </download-excel>
+                    </div>
+
+                    <div class="export-controls">
+                        <span>导出行数：</span>
+                        <el-input v-model.number="exportRows" :min="1" :max="10000"></el-input>
+                    </div>
+                </el-card>
+            </el-col>
+        </el-row>
+
+    </div>
+
+    <script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+    <script src="https://unpkg.com/vue-json-excel@0.3.0/dist/vue-json-excel.umd.js"></script>
+    <script>
+    if (typeof window !== "undefined" && "Vue" in window) {
+        window.Vue.component("downloadExcel", JsonExcel);
+    }
+    const preset = ['关键词'];
+    new Vue({
+        el: '#app',
+        data: {
+            list: [],
+            titles: [],
+            dynamicTags: [],
+            json_fields: {},
+            json_data: [],
+            exportRows: 200,
+            maxLength: 250,
+            minLength: 0,
+            prefixText: ''
+        },
+        created() {
+            document.body.ondrop = e => { e.preventDefault(); e.stopPropagation(); }
+            const fileName = this.getFileName();
+            try {
+                this.list = JSON.parse(localStorage.getItem(fileName + 'list') || '[]');
+                this.dynamicTags = JSON.parse(localStorage.getItem(fileName + 'tags') || '[]');
+                this.maxLength = JSON.parse(localStorage.getItem(fileName + 'maxLength') || '250');
+                this.minLength = JSON.parse(localStorage.getItem(fileName + 'minLength') || '0');
+                this.prefixText = localStorage.getItem(fileName + 'prefixText') || '';
+                for (const word of this.list) this.handleTextareaInput(null, word);
+            } catch {}
+            if (!this.list.length) for (let p of preset) this.list.push({ title: p, content: '' });
+            if (!this.dynamicTags.length) for (let p of preset) this.dynamicTags.push(p);
+        },
+        methods: {
+            getFileName() { return 'point_' + location.href },
+            handleTextareaInput(e, word) {
+                let str = word.content;
+                if (str) {
+                    str = str.replace(/\r/gi, '');
+                    const arr = str.split('\n');
+                    let lineNumber = '';
+                    for (let i = 1; i <= arr.length; i++) lineNumber += i + '\n';
+                    this.$set(word, 'lineNumber', lineNumber);
+                }
+            },
+            gen(arr) {
+                if (!arr.length) return '';
+                let index = Math.floor(Math.random() * arr.length);
+                return this.trim(arr[index]) + ' ';
+            },
+            isBlank(str) { return (/^\s*$/).test(('' + (str || ''))); },
+            trim(str) { return (str || '').replace(/^\s+|\s+$/g, ''); },
+            buildTitle(map) {
+                let prefixes = this.prefixText.split(/[(\r\n)\r\n]+/).filter(e => !this.isBlank(e));
+                let prefix = prefixes.length ? this.gen(prefixes) : '';
+                let t = prefix;
+                let count = 0;
+                while (t.length < this.maxLength && count < 500) {
+                    for (const tag of this.dynamicTags) {
+                        let temp = this.gen(map[tag]);
+                        if (!temp) continue;
+                        if (t.length + temp.length > this.maxLength) break;
+                        t += temp;
+                    }
+                    count++;
+                }
+                t = this.trim(t);
+                return (t.length >= this.minLength) ? t : '';
+            },
+            handleExport() {
+                this.json_fields = { '结果': '结果' };
+                this.json_data = [];
+                for (let i = 0; i < this.exportRows; i++) {
+                    let map = {};
+                    for (const e of this.list) map[e.title] = e.content.split(/[(\r\n)\r\n]+/).filter(e => !this.isBlank(e));
+                    let title = this.buildTitle(map);
+                    this.json_data.push({ '结果': title });
+                }
+                const fileName = this.getFileName();
+                localStorage.setItem(fileName + 'list', JSON.stringify(this.list));
+                localStorage.setItem(fileName + 'tags', JSON.stringify(this.dynamicTags));
+                localStorage.setItem(fileName + 'maxLength', JSON.stringify(this.maxLength));
+                localStorage.setItem(fileName + 'minLength', JSON.stringify(this.minLength));
+                localStorage.setItem(fileName + 'prefixText', this.prefixText);
+            },
+            randomGenerate() {
+                this.titles = [];
+                for (let i = 0; i < 10; i++) {
+                    let map = {};
+                    for (const e of this.list) map[e.title] = e.content.split(/[(\r\n)\r\n]+/).filter(e => !this.isBlank(e));
+                    let title = this.buildTitle(map);
+                    if (title) this.titles.push(title);
+                }
+                const fileName = this.getFileName();
+                localStorage.setItem(fileName + 'list', JSON.stringify(this.list));
+                localStorage.setItem(fileName + 'tags', JSON.stringify(this.dynamicTags));
+                localStorage.setItem(fileName + 'maxLength', JSON.stringify(this.maxLength));
+                localStorage.setItem(fileName + 'minLength', JSON.stringify(this.minLength));
+                localStorage.setItem(fileName + 'prefixText', this.prefixText);
+            },
+            addKeyword() {
+                const newTitle = `关键词组 ${this.list.length + 1}`;
+                this.list.push({ title: newTitle, content: '' });
+                this.dynamicTags.push(newTitle);
+            },
+            removeKeyword(index) {
+                if (this.list.length <= 1) {
+                    this.$message.warning('至少需要保留一个关键词组');
+                    return;
+                }
+                const removedTitle = this.list[index].title;
+                this.list.splice(index, 1);
+                const tagIndex = this.dynamicTags.indexOf(removedTitle);
+                if (tagIndex !== -1) {
+                    this.dynamicTags.splice(tagIndex, 1);
+                }
+            }
+        }
+    });
+    </script>
+</body>
+</html>

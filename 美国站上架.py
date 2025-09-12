@@ -50,19 +50,18 @@ account = "YOULE"
 style = 'Classic'
 
 
-CiBiao = 'men cargo sweatpants'
+CiBiao = 'men sweatpants'
 leixing = 'pants'
-TG = -1
+TG = 1
 
-
-price = 8.99
+price = 9.99
 shipping = 4.99
 count = 0
 all_path = []
-item_type = 'athletic-pants'
+item_type = ''
 manufacturer = 'Bakgeerle'
-for i in range(25):
-    no = 2
+for i in range(3):
+    no = 1
     color_number = i+no
     #正常上架
     # color_number = 10
@@ -79,12 +78,12 @@ for i in range(25):
         count+=1
     elif i == 0 and TG == 1:
         TG_VP = 'T'
-        price = 32.49
+        price = 29.99
         shipping = 0
     else:
         TG_VP = 'C'
-        price = i + 19.99
-        shipping = 6.99 - i
+        price = i + 6.99
+        shipping = 4.99 - i
 
 
     # TG_VP = 'T'
@@ -108,5 +107,5 @@ for i in range(25):
 if TG == -1:
     current_date_str = datetime.now().strftime('%Y%m%d')
     day = current_date_str[2:]
-    mubiao_file = generate_filename(day, account, '02')
-    utils.copy_file(mubiao_file, all_path, 'P',2,account)
+    mubiao_file = generate_filename(day, account, '04')
+    utils.copy_file(mubiao_file, all_path, 'P',4,account)

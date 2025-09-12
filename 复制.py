@@ -133,18 +133,18 @@ def copyfile3(n, account, path):
     os.rename(new_file_path, renamed_file_path)
     print(f'文件已重命名为 {renamed_file_name}')
 
-
-n = 26
-account = "yo"
-# account = "li"
-# account = "zz"
-if account == "yo":
-    path = 'yo总模板.xlsx'
-elif account == "li":
-    path = 'li总模板.xlsx'
-elif account == "zz":
-    path = 'zz模板.xlsx'
-
-# copyfile1(n,account,path)
-path = r"C:\Users\Administrator\Desktop\product\250717\product_02.xls"
-copyfile2(path,n)
+#
+# n = 12
+# account = "yo"
+# # account = "li"
+# # account = "zz"
+# if account == "yo":
+#     path = 'yo总模板.xlsx'
+# elif account == "li":
+#     path = 'li总模板.xlsx'
+# elif account == "zz":
+#     path = 'zz模板.xlsx'
+#
+# # copyfile1(n,account,path)
+# path = r"C:\Users\Administrator\Desktop\product\250821\product_04.xls"
+# copyfile2(path,n)

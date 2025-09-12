@@ -4,7 +4,7 @@ from openpyxl import load_workbook
 from datetime import date
 
 # 文件夹路径
-folder_path = "C:\\Users\\Administrator\\Desktop\\250717"
+folder_path = "C:\\Users\\Administrator\\Desktop\\250911"
 
 # 获取今天的日期
 today = date.today()
@@ -23,7 +23,7 @@ ws_dest = wb_dest.active
 ws_dest.title = 'Merged Data'
 
 # 添加标题行
-ws_dest["A1"] = "SKU"
+ws_dest["A1"] = "系统SKU"
 ws_dest["B1"] = "平台SKU"
 
 # 修改前的数据保存到数组
