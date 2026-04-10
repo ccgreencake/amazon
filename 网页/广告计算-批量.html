@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>广告批量计算</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      color: #333;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      width: 1100px;
+      max-width: 100%;
+      text-align: center;
+    }
+    h1 { margin-bottom: 18px; color: #222; font-size: 28px; }
+    p.tip {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 25px;
+      background: #fff8e1;
+      padding: 10px;
+      border-left: 4px solid #ffc107;
+      text-align: left;
+    }
+    .form-group {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    label { font-weight: 600; display: block; margin-bottom: 10px; text-align: left; }
+    .radio-group {
+      display: flex; gap: 20px; margin-bottom: 20px;
+    }
+    .radio-group label {
+      font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 5px;
+    }
+    input[type="file"] { display: block; margin: 10px 0; font-size: 15px; }
+    .btn-container { display: flex; gap: 15px; margin-top: 15px; }
+    button {
+      border: none; color: white; padding: 12px 20px; border-radius: 7px;
+      cursor: pointer; font-weight: 600; font-size: 16px; flex: 1; transition: all 0.3s;
+    }
+    #processBtn { background-color: #007BFF; }
+    #processBtn:hover { background-color: #0056b3; }
+    #downloadBtn { background-color: #28a745; display: none; }
+    #downloadBtn:hover { background-color: #218838; }
+    .table-wrapper { overflow-x: auto; margin-top: 20px; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 900px; }
+    th, td { border: 1px solid #ddd; padding: 10px 8px; text-align: center; }
+    th { background-color: #007BFF; color: white; position: sticky; top: 0; }
+    tr:nth-child(even) { background-color: #f9faff; }
+    tr:hover { background-color: #e7f0ff; }
+    .total-row { background-color: #eee !important; font-weight: bold; color: #d32f2f; }
+    .error-msg { color: #d93025; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>广告批量计算</h1>
+    <p class="tip">
+      1. 选择包含多个 CSV 文件的<b>文件夹</b>。<br>
+      2. 运费规则：取“广告活动名称”最后面的数字。文件名将作为项目名展示。<br>
+      3. <b>优化：</b>如果产出或销售额为 0，ACOS 将显示为空值。
+    </p>
+
+    <div class="form-group">
+      <label>选择索引类型：</label>
+      <div class="radio-group">
+        <label><input type="radio" name="indexType" value="old" /> 老索引</label>
+        <label><input type="radio" name="indexType" value="new" checked /> 新索引</label>
+      </div>
+
+      <label>选择文件夹：</label>
+      <input type="file" id="folderInput" webkitdirectory directory multiple />
+
+      <div class="btn-container">
+        <button type="button" id="processBtn">开始批量计算</button>
+        <button type="button" id="downloadBtn">下载结果表格 (.csv)</button>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <div id="resultArea"></div>
+    </div>
+  </div>
+
+  <script>
+    const processBtn = document.getElementById('processBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const folderInput = document.getElementById('folderInput');
+    const resultArea = document.getElementById('resultArea');
+
+    let currentResults = [];
+
+    function parseCurrency(str) {
+      if (!str) return 0;
+      let s = str.trim().replace(/US\$|，|,/gi, '');
+      let match = s.match(/-?[\d\.]+/);
+      return match ? parseFloat(match[0]) : 0;
+    }
+
+    function readFile(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ name: file.name, content: e.target.result });
+        reader.onerror = () => resolve({ name: file.name, error: true });
+        reader.readAsText(file, "UTF-8");
+      });
+    }
+
+    function calculateFile(text, fileName, indexType) {
+      const rows = text.trim().split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+      if (rows.length < 2) return { fileName, error: "文件内容过少" };
+
+      let headers = rows[0].map(h => h.trim().replace(/^"|"$/g, ''));
+      const dataRows = rows.slice(1);
+
+      let colMap = (indexType === "new") ? {
+        activity: "广告活动名称", order: "购买量", sales: "销售额", spend: "总成本"
+      } : {
+        activity: "广告活动", order: "订单", sales: "销售额(USD)", spend: "花费(USD)"
+      };
+
+      const idxA = headers.indexOf(colMap.activity);
+      const idxO = headers.indexOf(colMap.order);
+      const idxSa = headers.indexOf(colMap.sales);
+      const idxSp = headers.indexOf(colMap.spend);
+
+      if ([idxA, idxO, idxSa, idxSp].includes(-1)) return { fileName, error: "索引不匹配" };
+
+      let spend = 0, order = 0, shipping = 0, sales = 0;
+
+      dataRows.forEach(row => {
+        if (row.length <= Math.max(idxA, idxO, idxSa, idxSp)) return;
+        const act = row[idxA].replace(/^"|"$/g, '').trim();
+        const ord = parseFloat(row[idxO].replace(/^"|"$/g, '')) || 0;
+        let shipUnit = 0;
+        const tail = act.slice(-6);
+        const match = tail.match(/[\d]+\.?[\d]*/);
+        if (match) shipUnit = parseFloat(match[0]);
+        order += ord;
+        shipping += (shipUnit * ord);
+        sales += parseCurrency(row[idxSa]);
+        spend += parseCurrency(row[idxSp]);
+      });
+
+      const output = shipping + sales;
+
+      // 核心修改：判断分母是否为 0
+      const acosVal = (output === 0) ? "" : (spend / output * 100).toFixed(2) + "%";
+      const fakeAcosVal = (sales === 0) ? "" : (spend / sales * 100).toFixed(2) + "%";
+
+      return {
+        fileName, spend, order, output, shipping, sales,
+        acos: acosVal,
+        fakeAcos: fakeAcosVal
+      };
+    }
+
+    processBtn.onclick = async () => {
+      const files = Array.from(folderInput.files).filter(f => f.name.toLowerCase().endsWith('.csv'));
+      if (files.length === 0) return alert("文件夹内没找到 CSV 文件");
+      resultArea.innerHTML = "计算中...";
+      downloadBtn.style.display = "none";
+      const indexType = document.querySelector('input[name="indexType"]:checked').value;
+      currentResults = [];
+      for (const file of files) {
+        const data = await readFile(file);
+        if (!data.error) currentResults.push(calculateFile(data.content, data.name, indexType));
+      }
+      renderTable(currentResults);
+      downloadBtn.style.display = "block";
+    };
+
+    function renderTable(results) {
+      let html = `<table><thead><tr>
+        <th>项目 (文件名)</th><th>广告花费</th><th>购买量</th><th>总产出</th>
+        <th>假ACOS</th><th>运费总额</th><th>销售额总额</th><th>实际ACOS</th>
+      </tr></thead><tbody>`;
+
+      let t_sp = 0, t_or = 0, t_ou = 0, t_sh = 0, t_sa = 0;
+
+      results.forEach(r => {
+        if (r.error) {
+          html += `<tr><td>${r.fileName}</td><td colspan="7" class="error-msg">错误: ${r.error}</td></tr>`;
+          return;
+        }
+        t_sp += r.spend; t_or += r.order; t_ou += r.output; t_sh += r.shipping; t_sa += r.sales;
+        html += `<tr>
+          <td>${r.fileName}</td><td>${r.spend.toFixed(2)}</td><td>${r.order}</td>
+          <td>${r.output.toFixed(2)}</td><td>${r.fakeAcos}</td>
+          <td>${r.shipping.toFixed(2)}</td><td>${r.sales.toFixed(2)}</td><td>${r.acos}</td>
+        </tr>`;
+      });
+
+      // 总计行的 ACOS 判断
+      const totalAcos = (t_ou === 0) ? "" : (t_sp / t_ou * 100).toFixed(2) + "%";
+      const totalFake = (t_sa === 0) ? "" : (t_sp / t_sa * 100).toFixed(2) + "%";
+
+      html += `<tr class="total-row">
+        <td>总计</td><td>${t_sp.toFixed(2)}</td><td>${t_or}</td>
+        <td>${t_ou.toFixed(2)}</td><td>${totalFake}</td>
+        <td>${t_sh.toFixed(2)}</td><td>${t_sa.toFixed(2)}</td><td>${totalAcos}</td>
+      </tr></tbody></table>`;
+
+      resultArea.innerHTML = html;
+    }
+
+    downloadBtn.onclick = () => {
+      if (currentResults.length === 0) return;
+      let csvContent = "项目 (文件名),广告花费,购买量,总产出,假ACOS,运费总额,销售额总额,实际ACOS\n";
+      let t_sp = 0, t_or = 0, t_ou = 0, t_sh = 0, t_sa = 0;
+      currentResults.forEach(r => {
+        if (r.error) return;
+        t_sp += r.spend; t_or += r.order; t_ou += r.output; t_sh += r.shipping; t_sa += r.sales;
+        csvContent += `"${r.fileName}",${r.spend.toFixed(2)},${r.order},${r.output.toFixed(2)},${r.fakeAcos},${r.shipping.toFixed(2)},${r.sales.toFixed(2)},${r.acos}\n`;
+      });
+      const totalAcos = (t_ou === 0) ? "" : (t_sp / t_ou * 100).toFixed(2) + "%";
+      const totalFake = (t_sa === 0) ? "" : (t_sp / t_sa * 100).toFixed(2) + "%";
+      csvContent += `总计,${t_sp.toFixed(2)},${t_or},${t_ou.toFixed(2)},${totalFake},${t_sh.toFixed(2)},${t_sa.toFixed(2)},${totalAcos}\n`;
+
+      const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const dateStr = new Date().toISOString().slice(0, 10);
+      link.setAttribute("href", URL.createObjectURL(blob));
+      link.setAttribute("download", `广告计算结果_${dateStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+  </script>
+</body>
+</html>

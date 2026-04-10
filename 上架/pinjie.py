@@ -1,11 +1,10 @@
 import openpyxl
 import random
 import subprocess
-import re
-import re
+
 
 excel_file = r'C:\Users\Administrator\Desktop\new 词表.xlsx'
-import re
+
 
 import re
 
@@ -164,7 +163,8 @@ shuxing = [
                     "oversized",
                     "breathable",
                     "petite",
-                    "y2k"
+                    "y2k",
+    "big and tall"
                 ]
 
 
@@ -187,7 +187,13 @@ def remove_third_and_later_duplicates(text):
 
     return ' '.join(result)  # 将结果列表重新组合为字符串
 # 要处理的Excel文件路径
-def zibiao(num, cibiao, title, colors):
+def zibiao(num, cibiao, title, colors,flag):
+    if flag == "LONG5":
+        excel_file = r'C:\Users\Administrator\Desktop\词表DE.xlsx'
+        wb = openpyxl.load_workbook(excel_file)
+    else:
+        excel_file = r'C:\Users\Administrator\Desktop\new 词表.xlsx'
+        wb = openpyxl.load_workbook(excel_file)
     ws = wb[cibiao]
     texts = [cell.value.strip() for cell in ws['C'] if cell.value and isinstance(cell.value, str)]
     texts.pop(0)
@@ -251,12 +257,17 @@ def zibiao(num, cibiao, title, colors):
             random_strings.append(final_string)
 
         return random_strings
-def pinjie1(num,cibiao,title,fangfa):
+def pinjie1(num,cibiao,title,fangfa,flag):
     # excel_file = r'C:\Users\Administrator\Desktop\new 词表.xlsx'
     #
     # # 读取Excel文件
     # wb = openpyxl.load_workbook(excel_file)
-
+    if flag == "LONG5":
+        excel_file = r'C:\Users\Administrator\Desktop\词表DE.xlsx'
+        wb = openpyxl.load_workbook(excel_file)
+    else:
+        excel_file = r'C:\Users\Administrator\Desktop\new 词表.xlsx'
+        wb = openpyxl.load_workbook(excel_file)
     ws = wb[cibiao]
     changdu = 250
     # changdu=500
@@ -296,6 +307,25 @@ def pinjie1(num,cibiao,title,fangfa):
                     "petite",
                     "y2k"
                 ]
+                if flag == "LONG5":
+                    shuxing = [
+                        "Weit geschnitten",
+                        "Freizeitkleidung",
+                        "Übergröße",
+                        "Bequem",
+                        "Weich",
+                        "Komfortabel",
+                        "Elegant",
+                        "Gemütlich",
+                        "Trendy",
+                        "Locker geschnitten",
+                        "Winter",
+                        "Leicht",
+                        "Oversized",
+                        "Atmungsaktiv",
+                        "Petite",
+                        "Y2K"
+                    ]
                 random.shuffle(shuxing)
                 shuxing = shuxing+shuxing[:]+shuxing[:]+shuxing[:]
                 n=0
@@ -337,6 +367,12 @@ def pinjie1(num,cibiao,title,fangfa):
         # subprocess.call([wps_path, new_excel_file])
         # print(f"文件 '{new_excel_file}' 已使用WPS打开。")
 def pinjie2(num, cibiao, flag):
+    if flag == "LONG5":
+        excel_file = r'C:\Users\Administrator\Desktop\词表DE.xlsx'
+        wb = openpyxl.load_workbook(excel_file)
+    else:
+        excel_file = r'C:\Users\Administrator\Desktop\new 词表.xlsx'
+        wb = openpyxl.load_workbook(excel_file)
     ws = wb[cibiao]
     changdu = 500
     texts = [cell.value.strip() for cell in ws['A'] if cell.value and isinstance(cell.value, str)]

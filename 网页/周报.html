@@ -158,13 +158,13 @@
                 'Refund',
                 'Shipping Services',
                 'SAFE-T reimbursement',
-                'Service Fee'
+                'Amazon Fees'
             ];
             const labelMap = {
                 'Refund': '退款',
                 'Shipping Services': '退货标签',
                 'SAFE-T reimbursement': '索赔',
-                'Service Fee': '优惠券'
+                'Amazon Fees': '优惠券'
             };
 
             // 汇总所有账号合计
@@ -197,8 +197,8 @@
                                 const category = cols[2].replace(/^"|"$/g, '').trim();
                                 if (!validCategories.has(category)) return;
 
-                                // Service Fee 只统计 Coupon 相关
-                                if (category === 'Service Fee') {
+                                // Amazon Fees 只统计 Coupon 相关
+                                if (category === 'Amazon Fees') {
                                     const col6 = cols[5]?.replace(/^"|"$/g, '').trim() || '';
                                     if (!col6.includes('Coupon')) return;
                                 }

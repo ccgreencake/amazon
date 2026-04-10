@@ -20,7 +20,7 @@ def description(file_path,size_chart,p5):
         i += 1
     part = []
     for n in range(i, 0, -1):
-        part.append(p5[n - 1].split(":"))
+        part.append(p5[n - 1].replace("：", ":").split(":"))
     product_description = ''
     position_strong = {}
     position = {}
@@ -176,10 +176,12 @@ def copy_file(file_b_path, file_a_path,flag,no,account):
         path = 'yo总模板.xlsx'
     elif account == "LIANG":
         path = 'li总模板.xlsx'
-    elif account == "SANSK":
-        path = 'san模板.xlsx'
-    elif account == "SIYAT":
-        path = 'si模板.xlsx'
+    elif account == "LONG5":
+        path = 'long总模板.xlsx'
+    elif account == "QMTIY":
+        path = 'qm总模板.xlsx'
+    elif account == "SGTED":
+        path = "sg总模板.xlsx"
     if not os.path.exists(file_b_path):
         copyfile3(no,account,path)  # 文件不存在，调用方法
     else:
@@ -265,17 +267,18 @@ def copy_file(file_b_path, file_a_path,flag,no,account):
 
 
 def copy_fileDE(file_b_path, file_a_path,flag,no,account):
-    # 创建文件
     if account == "YOULE":
         path = 'yo总模板.xlsx'
     elif account == "LIANG":
         path = 'li总模板.xlsx'
-    elif account == "SANSK":
-        path = 'san模板.xlsx'
-    elif account == "SIYAT":
-        path = 'si模板.xlsx'
+    elif account == "LONG5":
+        path = 'long总模板.xlsx'
+    elif account == "QMTIY":
+        path = 'qm总模板.xlsx'
+    elif account == "SGTED":
+        path = "sg总模板.xlsx"
     if not os.path.exists(file_b_path):
-        copyfile3(no,account,path)  # 文件不存在，调用方法
+        copyfile3(no, account, path)  # 文件不存在，调用方法
     else:
         print("文件存在，跳过。")
 
@@ -311,7 +314,6 @@ def copy_fileDE(file_b_path, file_a_path,flag,no,account):
                 print(f"文件 '{file_a_path[i]}' 已被删除。")
             except OSError as e:
                 print(f"删除文件时出错: {e}")
-
 
         # 检查操作系统并使用WPS打开文件B
         if os.name == 'nt':  # Windows系统
@@ -356,3 +358,4 @@ def copy_fileDE(file_b_path, file_a_path,flag,no,account):
             subprocess.call([wps_path, file_b_path])
 
         print(f"文件 '{file_b_path}' 已使用WPS打开。")
+

@@ -2,7 +2,8 @@ import pandas as pd
 import os
 import numpy as np
 from datetime import date
-import utils
+from 上架 import utils
+
 today = date.today()
 date_string = today.strftime("%Y/%m/%d")
 sku_date=today.strftime("%Y%m%d")

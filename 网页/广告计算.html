@@ -7,9 +7,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: 'Roboto', Arial, sans-serif;
@@ -28,72 +26,28 @@
       padding: 30px 50px 40px 50px;
       border-radius: 12px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-      width: 700px; /* 调宽为700px */
+      width: 750px;
       max-width: 100%;
       text-align: center;
     }
 
-    h1 {
-      margin-top: 0;
-      margin-bottom: 18px;
-      color: #222;
-      font-weight: 700;
-      font-size: 28px;
-    }
+    h1 { margin-top: 0; margin-bottom: 18px; color: #222; font-weight: 700; font-size: 28px; }
 
-    p.tip {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 25px;
-      line-height: 1.5;
-      min-height: 40px;
-    }
+    p.tip { font-size: 14px; color: #666; margin-bottom: 25px; line-height: 1.5; min-height: 40px; }
 
-    label {
-      font-weight: 600;
-      font-size: 15px;
-      display: block;
-      margin-bottom: 8px;
-      color: #444;
-      text-align: left;
-      user-select: none;
-    }
+    label { font-weight: 600; font-size: 15px; display: block; margin-bottom: 8px; color: #444; text-align: left; }
 
-    .radio-group {
-      margin-bottom: 20px;
-      text-align: left;
-      display: flex;
-      justify-content: space-around;
-    }
+    .radio-group { margin-bottom: 20px; text-align: left; display: flex; justify-content: space-around; }
 
-    .radio-group label {
-      font-weight: 500;
-      cursor: pointer;
-      user-select: none;
-      font-size: 15px;
-      color: #444;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .radio-group label { font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 
-    input[type="radio"] {
-      accent-color: #007BFF;
-      cursor: pointer;
-      width: 18px;
-      height: 18px;
-    }
+    input[type="radio"] { accent-color: #007BFF; cursor: pointer; width: 18px; height: 18px; }
 
-    input[type="file"] {
-      display: block;
-      margin: 0 auto 30px auto;
-      cursor: pointer;
-      font-size: 15px;
-      color: #555;
-    }
+    input[type="file"] { display: block; margin: 0 auto 30px auto; cursor: pointer; font-size: 15px; color: #555; }
+
+    .btn-group { display: flex; flex-direction: column; gap: 10px; }
 
     button {
-      background-color: #007BFF;
       border: none;
       color: white;
       padding: 12px 30px;
@@ -102,293 +56,175 @@
       font-weight: 600;
       font-size: 17px;
       width: 100%;
-      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
+      transition: all 0.3s ease;
     }
 
-    button:hover:not(:disabled) {
-      background-color: #0056b3;
-      box-shadow: 0 5px 14px rgba(0, 86, 179, 0.5);
-    }
+    #processBtn { background-color: #007BFF; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); }
+    #processBtn:hover { background-color: #0056b3; }
 
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      box-shadow: none;
+    #downloadBtn {
+      background-color: #28a745;
+      box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+      display: none;
     }
+    #downloadBtn:hover { background-color: #218838; }
 
-    .result {
-      margin-top: 30px;
-      font-size: 17px;
-      color: #222;
-      text-align: center;
-      word-break: break-word;
-    }
+    .result { margin-top: 30px; font-size: 17px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; font-size: 14px; table-layout: fixed; }
+    th, td { border: 1px solid #ddd; padding: 12px 8px; text-align: center; }
+    th { background-color: #007BFF; color: white; }
+    tr:nth-child(even) { background-color: #f9faff; }
 
-    /* 表格样式 */
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 10px;
-      font-size: 15px;
-      color: #333;
-      user-select: text;
-      table-layout: fixed; /* 固定列宽，避免表格宽度溢出 */
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 12px 10px;
-      text-align: center;
-      word-wrap: break-word;
-    }
-
-    th {
-      background-color: #007BFF;
-      color: white;
-      font-weight: 600;
-    }
-
-    tr:nth-child(even) {
-      background-color: #f9faff;
-    }
-
-    tr:hover {
-      background-color: #e7f0ff;
-    }
-
-    /* 高亮缺少列 */
-    .missing-columns {
-      color: #d93025;
-      font-weight: 600;
-      margin-top: 18px;
-      text-align: left;
-      line-height: 1.4;
-    }
-
-    /* 响应式 */
-    @media (max-width: 720px) {
-      .container {
-        width: 100%;
-        padding: 20px 25px 30px 25px;
-      }
-    }
+    @media (max-width: 720px) { .container { width: 100%; } }
   </style>
 </head>
 <body>
-  <div class="container" role="main" aria-label="广告计算应用">
-    <p class="tip" aria-live="polite" aria-atomic="true">
-      请将广告活动名字末尾加上实际运费，比如 “男束腿卫裤-XXX-4.99”
-    </p>
+
+  <div class="container">
+    <p class="tip">请将广告活动名字末尾加上实际运费，比如 “男束腿卫裤-XXX-4.99”</p>
     <h1>广告计算</h1>
 
-    <form id="uploadForm" aria-label="上传CSV文件并选择索引类型">
-      <label for="indexType">选择索引类型：</label>
-      <div class="radio-group" role="radiogroup" aria-labelledby="indexTypeLabel">
-        <label><input type="radio" name="indexType" value="old" checked /> 老索引</label>
-        <label><input type="radio" name="indexType" value="new" /> 新索引</label>
+    <form id="uploadForm">
+      <label>选择索引类型：</label>
+      <div class="radio-group">
+        <label><input type="radio" name="indexType" value="old" /> 老索引 (旧列名)</label>
+        <label><input type="radio" name="indexType" value="new" checked /> 新索引 (新列名)</label>
       </div>
 
-      <input type="file" id="csvFile" accept=".csv" aria-required="true" aria-describedby="fileHelp" />
-      <button type="button" id="processBtn">上传并计算</button>
+      <input type="file" id="csvFile" accept=".csv" />
+
+      <div class="btn-group">
+        <button type="button" id="processBtn">上传并计算</button>
+        <button type="button" id="downloadBtn">下载计算结果表格</button>
+      </div>
     </form>
 
-    <div class="result" id="result" aria-live="polite" aria-atomic="true" tabindex="0"></div>
+    <div class="result" id="result"></div>
   </div>
 
   <script>
     const processBtn = document.getElementById('processBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
     const fileInput = document.getElementById('csvFile');
     const resultDiv = document.getElementById('result');
     const uploadForm = document.getElementById("uploadForm");
 
-    // 工具函数：清理并提取数字，去掉"US$",逗号等，能转成浮点数就返回数字，否则NaN
+    let currentResultData = null;
+    let originalFileName = "result"; // 默认文件名
+
     function parseCurrencyNumber(str) {
       if (!str) return NaN;
-      // 去掉空格，去掉 US$，去掉逗号
       let s = str.trim().replace(/US\$|，|,/gi, '');
-      // 保留数字、点、负号这些字符
-      s = s.match(/-?[\d\.]+/);
-      if (!s) return NaN;
-      return parseFloat(s[0]);
+      let match = s.match(/-?[\d\.]+/);
+      if (!match) return NaN;
+      return parseFloat(match[0]);
     }
 
-    // 主处理函数
     function processCSV() {
-      resultDiv.innerHTML = "";  // 重置结果显示
+      resultDiv.innerHTML = "";
+      downloadBtn.style.display = "none";
 
-      if (!fileInput.files.length) {
-        resultDiv.textContent = "请先上传一个 CSV 文件！";
-        fileInput.focus();
-        return;
-      }
+      if (!fileInput.files.length) { alert("请先上传一个 CSV 文件！"); return; }
 
       const file = fileInput.files[0];
-      const reader = new FileReader();
+      // 获取原始文件名并去掉扩展名
+      originalFileName = file.name.replace(/\.[^/.]+$/, "");
 
+      const reader = new FileReader();
       const indexType = uploadForm.indexType.value;
 
       reader.onload = function (event) {
         const text = event.target.result;
-        const rows = text.trim().split(/\r?\n/).map(row => row.split(","));
+        const rows = text.trim().split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
 
-        if (rows.length < 2) {
-          resultDiv.textContent = "CSV 文件内容无效，至少需要标题和一行数据！";
+        if (rows.length < 2) { alert("CSV 文件内容无效！"); return; }
+
+        let headers = rows[0].map(h => h.trim().replace(/^"|"$/g, ''));
+        let colMap = indexType === "new" ?
+          { activity: "广告活动名称", order: "购买量", sales: "销售额", spend: "总成本" } :
+          { activity: "广告活动", order: "订单", sales: "销售额(USD)", spend: "花费(USD)" };
+
+        const indices = [colMap.activity, colMap.order, colMap.sales, colMap.spend].map(col => headers.indexOf(col));
+        if (indices.includes(-1)) {
+          resultDiv.innerHTML = `<div style="color:red; font-weight:bold;">CSV 列名不匹配，请检查选择的“索引类型”。</div>`;
           return;
         }
 
-        let headers = rows[0].map(h => h.trim());
-        const dataRows = rows.slice(1);
+        const [idxActivity, idxOrder, idxSales, idxSpend] = indices;
+        let tAdOrder = 0, tSales = 0, tSpend = 0, tOrder = 0;
 
-        // 新索引时，映射列名
-        if (indexType === "new") {
-          headers = headers.map(h => {
-            if (h === "花费(USD)") return "支出";
-            else if (h === "销售额(USD)") return "销量";
-            else if (h === "订单") return "订单数量";
-            return h;
-          });
-        }
+        rows.slice(1).forEach(row => {
+          if (row.length <= Math.max(...indices)) return;
+          const rawActivity = row[idxActivity].replace(/^"|"$/g, '').trim();
+          const orderVal = parseFloat(row[idxOrder].replace(/^"|"$/g, '')) || 0;
 
-        // 需要检查的列
-        const requiredColumns = [
-          "广告活动",
-          indexType === "new" ? "订单数量" : "订单",
-          indexType === "new" ? "销量" : "销售额(USD)",
-          indexType === "new" ? "支出" : "花费(USD)"
-        ];
+          let shipping = 0;
+          const numMatch = rawActivity.slice(-6).match(/[\d]+\.?[\d]*/);
+          if (numMatch) shipping = parseFloat(numMatch[0]);
 
-        // 找列索引
-        const indices = requiredColumns.map(col => headers.indexOf(col));
-        // 判断缺少哪些列
-        const missingCols = requiredColumns.filter((col, i) => indices[i] === -1);
+          tAdOrder += shipping * orderVal;
+          tOrder += orderVal;
+          tSales += parseCurrencyNumber(row[idxSales]) || 0;
+          tSpend += parseCurrencyNumber(row[idxSpend]) || 0;
+        });
 
-        if (missingCols.length > 0) {
-          // 显示缺少的具体列
-          resultDiv.innerHTML = `
-            <div class="missing-columns" role="alert">
-              CSV 文件缺少以下必要列：
-              <ul>
-                ${missingCols.map(c => `<li><code>${c}</code></li>`).join("")}
-              </ul>
-              请检查文件格式后重新上传。
-            </div>
-          `;
-          return;
-        }
+        const totalOutput = (tAdOrder + tSales).toFixed(2);
+        const acos = (tSpend / (parseFloat(totalOutput) || 1) * 100).toFixed(2);
+        const fakeAcos = (tSpend / (tSales || 1) * 100).toFixed(2);
 
-        // 根据索引取值
-        const [adActivityIndex, orderIndex, salesIndex, spendIndex] = indices;
-
-        // 初始化统计
-        let totalAdOrderSum = 0;
-        let totalSalesSum = 0;
-        let totalSpendSum = 0;
-        let totalOrderSum = 0;
-
-        for (const row of dataRows) {
-          try {
-            if (
-              row.length <= Math.max(adActivityIndex, orderIndex, salesIndex, spendIndex)
-            ) continue; // 跳过无效行
-
-            const adActivityRaw = row[adActivityIndex].trim();
-            const orderRaw = row[orderIndex].trim();
-            const salesRaw = row[salesIndex].trim();
-            const spendRaw = row[spendIndex].trim();
-
-            // 广告活动尾部提取数字
-            let adActivityValue = NaN;
-            const tailStr = adActivityRaw.slice(-6); // 改成截取最后6个字符，预防多位数字
-            const numMatch = tailStr.match(/[\d]+\.?[\d]*/); // 只匹配正数和小数点
-            if (numMatch) {
-              adActivityValue = parseFloat(numMatch[0]);
-            }
-
-            // 新索引下，支出和销量是货币格式，提取数字；老索引下为普通数字
-            const orderValue = parseFloat(orderRaw); // 订单(数量)直接数字
-            let salesValue, spendValue;
-            if (indexType === "new") {
-              salesValue = parseCurrencyNumber(salesRaw);
-              spendValue = parseCurrencyNumber(spendRaw);
-            } else {
-              salesValue = parseFloat(salesRaw);
-              spendValue = parseFloat(spendRaw);
-            }
-
-            if (!isNaN(adActivityValue) && !isNaN(orderValue)) {
-              totalAdOrderSum += adActivityValue * orderValue;
-              totalOrderSum += orderValue;
-            }
-            if (!isNaN(salesValue)) {
-              totalSalesSum += salesValue;
-            }
-            if (!isNaN(spendValue)) {
-              totalSpendSum += spendValue;
-            }
-          } catch (ignore) {
-            // 跳过错误行
-          }
-        }
-
-        // 四舍五入及格式化
-        totalAdOrderSum = totalAdOrderSum.toFixed(2);
-        totalSalesSum = totalSalesSum.toFixed(2);
-        totalSpendSum = totalSpendSum.toFixed(2);
-        totalOrderSum = totalOrderSum.toFixed(0);
-
-        const totalOutput = (parseFloat(totalAdOrderSum) + parseFloat(totalSalesSum)).toFixed(2);
-        const acos = (parseFloat(totalSpendSum) / (parseFloat(totalOutput) || 1) * 100).toFixed(2);
-        const fakeAcos = (parseFloat(totalSpendSum) / (parseFloat(totalSalesSum) || 1) * 100).toFixed(2);
+        currentResultData = {
+          spend: tSpend.toFixed(2),
+          orders: tOrder,
+          output: totalOutput,
+          fakeAcos: fakeAcos + "%",
+          shipping: tAdOrder.toFixed(2),
+          sales: tSales.toFixed(2),
+          realAcos: acos + "%"
+        };
 
         resultDiv.innerHTML = `
-          <table role="table" aria-label="广告计算结果">
-            <thead>
-              <tr>
-                <th>项目</th>
-                <th>广告花费</th>
-                <th>订单量</th>
-                <th>广告产出</th>
-                <th>假ACOS (%)</th>
-                <th>运费总金额</th>
-                <th>销售额总金额</th>
-                <th>实际ACOS (%)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>金额/数量</td>
-                <td>${totalSpendSum}</td>
-                <td>${totalOrderSum}</td>
-                <td>${totalOutput}</td>
-                <td>${fakeAcos}%</td>
-                <td>${totalAdOrderSum}</td>
-                <td>${totalSalesSum}</td>
-                <td>${acos}%</td>
-              </tr>
-            </tbody>
-          </table>
-        `;
-        resultDiv.focus();
+          <table>
+            <thead><tr><th>广告花费</th><th>购买量</th><th>广告产出</th><th>实际ACOS (%)</th></tr></thead>
+            <tbody><tr>
+              <td>${currentResultData.spend}</td>
+              <td>${currentResultData.orders}</td>
+              <td>${currentResultData.output}</td>
+              <td style="font-weight:bold; color:#007BFF;">${currentResultData.realAcos}</td>
+            </tr></tbody>
+          </table>`;
+        downloadBtn.style.display = "block";
       };
-
-      reader.onerror = function () {
-        resultDiv.textContent = "读取文件时出错，请重试！";
-      };
-
       reader.readAsText(file, "UTF-8");
     }
 
-    processBtn.addEventListener("click", processCSV);
+    // 下载执行逻辑
+    downloadBtn.addEventListener("click", () => {
+      if (!currentResultData) return;
 
-    // 支持键盘回车触发计算
-    fileInput.addEventListener("keypress", function (e) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        processBtn.click();
-      }
+      const headers = ["广告花费", "购买量", "广告产出", "假ACOS (%)", "运费总金额", "销售额总金额", "实际ACOS (%)"];
+      const values = [
+        currentResultData.spend, currentResultData.orders, currentResultData.output,
+        currentResultData.fakeAcos, currentResultData.shipping, currentResultData.sales, currentResultData.realAcos
+      ];
+
+      // 添加 BOM 确保 Excel 打开不乱码
+      let csvContent = "\uFEFF" + headers.join(",") + "\n" + values.join(",") + "\n";
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      // 设置下载文件名：原文件名 + 处理结果
+      const finalFileName = `${originalFileName}处理结果.csv`;
+
+      link.setAttribute("href", url);
+      link.setAttribute("download", finalFileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     });
+
+    processBtn.addEventListener("click", processCSV);
   </script>
 </body>
 </html>

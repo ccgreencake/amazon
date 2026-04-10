@@ -1,8 +1,7 @@
 import pandas as pd
 import os
 import numpy as np
-from datetime import date
-import utils
+from 上架 import utils
 
 
 def amazon(source_file,CiBiao,account,TG_VP,price):
@@ -250,7 +249,7 @@ def amazon(source_file,CiBiao,account,TG_VP,price):
         print("大描述超过2000字符!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
-    item_type = utils.item_type(string,feed_product)
+    item_type = utils.item_type(string, feed_product)
     df_new['item_type'] = [item_type] * length
 
     df_new['price'] = [price] * length# 后续要去除第一行

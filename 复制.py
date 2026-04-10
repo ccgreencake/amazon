@@ -85,35 +85,41 @@ def copyfile2(file_path,n):
 
 
 def copyfile3(n, account, path):
-    # 根据账户名映射到简短形式
-    if account == "YOULE":
-        account = 'yo'
-    elif account == "LIANG":
-        account = 'li'
-    elif account == "SANSK":
-        account = 'sa'
-    elif account == "SIYAT":
-        account = "si"
+    # 1. 根据账户名映射到简短形式
+    account_map = {
+        "YOULE": "yo",
+        "LIANG": "li",
+        "LONG5": "lo",
+        "QMTIY": "qm",
+        "SGTED": "sg"
 
-    # 获取当前日期并格式化为 YYMMDD 的形式
+    }
+    account = account_map.get(account, account)  # 如果不在字典里则保持原样
+
+
+
+    # 1. 设置来源路径（桌面）
+    source_root = os.path.join(os.path.expanduser('~'), 'Desktop')
+    source_file_path = os.path.join(source_root, path)  # 这里去桌面找源文件
+
+    # 2. 设置目标根路径（F盘）
+    target_root = r'F:\上架'
     folder_name = datetime.now().strftime('%y%m%d')
-    # 设置桌面路径
-    desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
-    # 创建文件夹的完整路径
-    folder_path = os.path.join(desktop_path, folder_name)
+    folder_path = os.path.join(target_root, folder_name)
 
-    # 检查文件夹是否已存在，如果不存在则创建
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
-    # 源文件路径
-    source_file_path = os.path.join(desktop_path, path)
-
-    # 构造新文件名并复制文件
+    # 3. 复制并重命名
     new_file_name = f'总模板_{n}.xlsx'
     new_file_path = os.path.join(folder_path, new_file_name)
-    shutil.copy2(source_file_path, new_file_path)
 
+    # 检查桌面到底有没有这个文件
+    if not os.path.exists(source_file_path):
+        print(f"错误：在桌面找不到源文件 {path}，请确认文件名是否正确")
+        return
+
+    shutil.copy2(source_file_path, new_file_path)
     # 输出复制成功的信息
     print(f'文件 {new_file_name} 已复制到 {folder_path}')
 
@@ -133,18 +139,4 @@ def copyfile3(n, account, path):
     os.rename(new_file_path, renamed_file_path)
     print(f'文件已重命名为 {renamed_file_name}')
 
-#
-# n = 12
-# account = "yo"
-# # account = "li"
-# # account = "zz"
-# if account == "yo":
-#     path = 'yo总模板.xlsx'
-# elif account == "li":
-#     path = 'li总模板.xlsx'
-# elif account == "zz":
-#     path = 'zz模板.xlsx'
-#
-# # copyfile1(n,account,path)
-# path = r"C:\Users\Administrator\Desktop\product\250821\product_04.xls"
-# copyfile2(path,n)
+

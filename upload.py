@@ -1,4 +1,4 @@
-import Amazon
+from 上架 import Amazon
 from datetime import datetime
 def generate_filename(day, prefix,number):
     # 生成目标文件名
@@ -93,4 +93,4 @@ day = current_date_str[2:]
 # 使用函数生成文件路径
 mubiao_file = generate_filename(day, account, number)
 source_file = generate_source_filename(day,number)
-Amazon.amazon(mubiao_file,source_file,CiBiao,account,TG_VP,price,shipping,leixing,style,fangfa,color_number,zuhe,zibiao)
+Amazon.amazon(mubiao_file, source_file, CiBiao, account, TG_VP, price, shipping, leixing, style, fangfa, color_number, zuhe, zibiao)

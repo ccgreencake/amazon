@@ -1,8 +1,7 @@
 import AmazonDE
 from datetime import datetime
 
-import utils
-
+from 上架 import utils
 
 
 def generate_filename(day, prefix,number):
@@ -11,14 +10,14 @@ def generate_filename(day, prefix,number):
         prefix = "yo"
     elif prefix == "LIANG":
         prefix = "li"
-    elif prefix == "SANSK":
-        prefix = "sa"
+    elif prefix == "LONG5":
+        prefix = "lo"
     target_filename = f"{prefix}{day}{number}.xlsx"
-    return rf'C:\Users\Administrator\Desktop\{day}\{target_filename}'
+    return rf'F:\上架\{day}\{target_filename}'
 
 def generate_source_filename(day, number):
     # 生成源文件名
-    return rf'C:\Users\Administrator\Desktop\product\{day}\product_{number}.xls'
+    return rf'F:\product\{day}\product_{number}.xls'
 
 # 根据子标题拼接成ST
 fangfa = 0
@@ -38,26 +37,26 @@ zuhe = 1
 # 没有组合图片
 zuhe = 0
 
-account = "SANSK"
+account = "LONG5"
 
 
 
-style = 'Casual'
+style = 'Lässig'
 
 
-CiBiao = 'raincoat'
-leixing = 'coat'
-TG = 1
+CiBiao = 'linen pants'
+leixing = 'pants'
+TG = 0
 
 
 price = 5.99
 shipping = 6.99
 count = 0
 all_path = []
-item_type = 'shorts'
-manufacturer = 'Bakgeerle'
+item_type = ''
+manufacturer = 'Generisch'
 for i in range(1):
-    no = 5
+    no = 1
     color_number = i+no
     #正常上架
     # color_number = 10
@@ -74,7 +73,7 @@ for i in range(1):
         count+=1
     elif i == 0 and TG == 1:
         TG_VP = 'T'
-        price = 44.99
+        price = 34.99
         shipping = 0
     else:
         TG_VP = 'C'
@@ -98,7 +97,7 @@ for i in range(1):
     if TG_VP == 'P':
         all_path.append(file_path)
     else:
-        utils.copy_fileDE(mubiao_file, file_path, TG_VP,no,account)
+        utils.copy_fileDE(mubiao_file, file_path, TG_VP, no, account)
 
 if TG == -1:
     current_date_str = datetime.now().strftime('%Y%m%d')

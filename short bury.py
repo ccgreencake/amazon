@@ -1,9 +1,6 @@
 import pandas as pd
 import os
-import numpy as np
 from datetime import date
-
-import utils
 
 today = date.today()
 date_string = today.strftime("%Y/%m/%d")

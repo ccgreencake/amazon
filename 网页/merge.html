@@ -74,7 +74,9 @@
           let data = await readExcelFile(file);
 
           // 获取时间信息
-          const timeInfo = file.name.slice(5, 11);
+          const baseName = file.name.replace(/\.xlsx$/i, '');
+          const timeInfo = baseName.slice(-6);
+
           // 如果要加时间列
           if (addTimeColumn) {
             data.forEach((row, idx) => {

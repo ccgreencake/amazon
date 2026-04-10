@@ -3,8 +3,7 @@ import random
 import pandas as pd
 import os
 import numpy as np
-import utils
-import pinjie
+from 上架 import utils, pinjie
 
 
 def title_case(s):
@@ -37,15 +36,15 @@ def amazon(mubiao_file,source_file,CiBiao,account,TG_VP,price,shipping,leixing,s
 
 
 
-    if (account == "SANSK"):
+    if (account == "LONG5"):
         color_prefix = "A"
         brand = "Generisch"
     elif (account == "YOULE"):
         color_prefix = "B"
-        brand = "Bakgeerle"
+        brand = "Generisch"
     elif(account == "zz"):
         color_prefix = "B"
-        brand = "Generic"
+        brand = "Generisch"
         
 
 
@@ -60,7 +59,7 @@ def amazon(mubiao_file,source_file,CiBiao,account,TG_VP,price,shipping,leixing,s
         zi = df_source2.iloc[0:, 2]
         zi = zi.dropna()
     # point5 = df_source2.iloc[0:, 2]
-    point5 = pinjie.pinjie2(5,CiBiao,account)
+    point5 = pinjie.pinjie2(5, CiBiao, account)
 
 
 
@@ -174,7 +173,21 @@ def amazon(mubiao_file,source_file,CiBiao,account,TG_VP,price,shipping,leixing,s
     img_7 = img_7_1.tolist()
     if zuhe == 1:
         img_zuhe = img_zuhe_1.tolist()
-    if (account == "zz"):
+    if account == "LONG5":
+        main_img = [url.replace("192.3.95.71", "long.yant88.xyz") if not pd.isna(url) else url for url in main_img]
+        main_img_main = main_img_main.replace("192.3.95.71", "long.yant88.xyz")
+        final_img = [url.replace("192.3.95.71", "long.yant88.xyz") if not pd.isna(url) else url for url in final_img]
+        img_1 = [url.replace("192.3.95.71", "long.yant88.xyz") if not pd.isna(url) else url for url in img_1]
+        img_2 = [url.replace("192.3.95.71", "long.yant88.xyz") if not pd.isna(url) else url for url in img_2]
+        img_3 = [url.replace("192.3.95.71", "long.yant88.xyz") if not pd.isna(url) else url for url in img_3]
+        img_4 = [url.replace("192.3.95.71", "long.yant88.xyz") if not pd.isna(url) else url for url in img_4]
+        img_5 = [url.replace("192.3.95.71", "long.yant88.xyz") if not pd.isna(url) else url for url in img_5]
+        img_6 = [url.replace("192.3.95.71", "long.yant88.xyz") if not pd.isna(url) else url for url in img_6]
+        img_7 = [url.replace("192.3.95.71", "long.yant88.xyz") if not pd.isna(url) else url for url in img_7]
+        if zuhe == 1:
+            img_zuhe = [url.replace("192.3.95.71", "long.yant88.xyz") if not pd.isna(url) else url for url in
+                        img_zuhe]
+    else :
         main_img = [url.replace("192.3.95.71", "192.3.95.71") if not pd.isna(url) else url for url in main_img]
         main_img_main = main_img_main.replace("192.3.95.71", "192.3.95.71")
         final_img = [url.replace("192.3.95.71", "192.3.95.71") if not pd.isna(url) else url for url in final_img]
@@ -187,22 +200,6 @@ def amazon(mubiao_file,source_file,CiBiao,account,TG_VP,price,shipping,leixing,s
         img_7 = [url.replace("192.3.95.71", "192.3.95.71") if not pd.isna(url) else url for url in img_7]
         if zuhe == 1:
             img_zuhe = [url.replace("192.3.95.71", "192.3.95.71") if not pd.isna(url) else url for url in img_zuhe]
-    elif account == "SANSK":
-        main_img = [url.replace("192.3.95.71", "youl.yant88.xyz") if not pd.isna(url) else url for url in main_img]
-        main_img_main = main_img_main.replace("192.3.95.71", "youl.yant88.xyz")
-        final_img = [url.replace("192.3.95.71", "youl.yant88.xyz") if not pd.isna(url) else url for url in final_img]
-        img_1 = [url.replace("192.3.95.71", "youl.yant88.xyz") if not pd.isna(url) else url for url in img_1]
-        img_2 = [url.replace("192.3.95.71", "youl.yant88.xyz") if not pd.isna(url) else url for url in img_2]
-        img_3 = [url.replace("192.3.95.71", "youl.yant88.xyz") if not pd.isna(url) else url for url in img_3]
-        img_4 = [url.replace("192.3.95.71", "youl.yant88.xyz") if not pd.isna(url) else url for url in img_4]
-        img_5 = [url.replace("192.3.95.71", "youl.yant88.xyz") if not pd.isna(url) else url for url in img_5]
-        img_6 = [url.replace("192.3.95.71", "youl.yant88.xyz") if not pd.isna(url) else url for url in img_6]
-        img_7 = [url.replace("192.3.95.71", "youl.yant88.xyz") if not pd.isna(url) else url for url in img_7]
-        if zuhe == 1:
-            img_zuhe = [url.replace("192.3.95.71", "youl.yant88.xyz") if not pd.isna(url) else url for url in
-                        img_zuhe]
-
-
 
     # 创建新的数据框架
     df_new = pd.DataFrame()
@@ -228,7 +225,7 @@ def amazon(mubiao_file,source_file,CiBiao,account,TG_VP,price,shipping,leixing,s
     if zibiao == 1:
         new_title = title
     elif zibiao == 0:
-        new_title = pinjie.zibiao(length,CiBiao,title,colors)
+        new_title = pinjie.zibiao(length, CiBiao, title, colors,account)
     new_title = [title_case(i) for i in new_title]
 
     # for i in new_title:
@@ -265,8 +262,8 @@ def amazon(mubiao_file,source_file,CiBiao,account,TG_VP,price,shipping,leixing,s
     # df_new['model'] = np.nan
     # df_new['model_name'] = np.nan
     df_new['style'] = [style] * length
-    df_new['key'] = pinjie.pinjie1(length,CiBiao,small_title,fangfa)
-    # df_new['weave_type'] = ['Knit'] * length
+    df_new['key'] = pinjie.pinjie1(length, CiBiao, small_title, fangfa,account)
+    df_new['weave_type'] = ['Stricken'] * length
     if TG_VP == "P":
         for i in range(5):
             name = 'point' + str(i)
@@ -412,13 +409,32 @@ def amazon(mubiao_file,source_file,CiBiao,account,TG_VP,price,shipping,leixing,s
         else:
             continue
 
-    for i in range(a):
-        array_name = f"Array{i+1}"  # 创建数组名称
-        start_index = i * length  # 计算起始索引
-        end_index = (i + 1) * length  # 计算结束索引
-        array_data = zi[start_index:end_index].reset_index(drop=True)  # 提取32个元素并重置索引
-        df_new[array_name] = array_data  # 将数据填充到新的数据框架的不同列中
+    # for i in range(a):
+    #     array_name = f"Array{i+1}"  # 创建数组名称
+    #     start_index = i * length  # 计算起始索引
+    #     end_index = (i + 1) * length  # 计算结束索引
+    #     array_data = zi[start_index:end_index].reset_index(drop=True)  # 提取32个元素并重置索引
+    #     df_new[array_name] = array_data  # 将数据填充到新的数据框架的不同列中
+        
+    # 不埋词
+    if account == "LONG5":
+        df_new['model'] = ['Generisch'] * length
+        df_new['model_name'] = ['Generisch'] * length
+    else:
+        df_new['model'] = ['Generisch'] * length
+        df_new['model_name'] = ['Generisch'] * length
 
+    df_new['closure_type'] = ['Elastisch'] * length
+    df_new['inner_material_type'] = ['Polyester'] * length
+    df_new['outer_material_type'] = ['Polyestergemisch'] * length
+    df_new['part_number'] = ['Generisch'] * length
+    df_new['platinum_keywords1'] = pinjie.pinjie1(length, CiBiao, small_title, fangfa,account)
+    df_new['platinum_keywords2'] = pinjie.pinjie1(length, CiBiao, small_title, fangfa,account)
+    df_new['platinum_keywords3'] = pinjie.pinjie1(length, CiBiao, small_title, fangfa,account)
+    df_new['platinum_keywords4'] = pinjie.pinjie1(length, CiBiao, small_title, fangfa,account)
+    df_new['platinum_keywords5'] = pinjie.pinjie1(length, CiBiao, small_title, fangfa,account)
+    df_new['collection_name'] = ['All'] * length
+    df_new['shaft_style_type'] = [''] * length
 
 
 
@@ -445,25 +461,19 @@ def amazon(mubiao_file,source_file,CiBiao,account,TG_VP,price,shipping,leixing,s
 
 
 
-    if leixing == "pant":
+    if leixing == "pants":
         df_new['size_sys'] = ['DE / NL / SE / PL'] * length
         df_new['Alpha'] = ['Alphanumerisch'] * length
         size_map = [str(string).replace("2X", "XX").replace("3X", "XXX").replace("4X", "XXXX").replace("5X", "XXXXX").replace("6X", "XXXXXX").replace("-Large","L").replace("Large","L").replace("Medium","M").replace("Small","S") for string in size]
-        size = [str(string).replace("XX", "2X").replace("XXX", "3X").replace("XXXX", "4X").replace("XXXXX", "5X").replace("XXXXXXX", "6X")for string in size_map]
+        size = [str(string).replace("XXX", "3X").replace("XXXX", "4X").replace("XXXXX", "5X").replace("XXXXXXX", "6X")for string in size_map]
         df_new['size'] = size
         df_new['body_type'] = ['Regular'] * length
         df_new['height_type'] = ['Regular'] * length
-        df_new['size1'] = np.nan
-        df_new['size2'] = np.nan
-        df_new['size3'] = np.nan
-        df_new['size4'] = np.nan
-        df_new['size5'] = np.nan
+        for i in range(1, 16):
+            df_new[f'size{i}'] = np.nan
     elif leixing == "coat":
-        df_new['size1'] = np.nan
-        df_new['size2'] = np.nan
-        df_new['size3'] = np.nan
-        df_new['size4'] = np.nan
-        df_new['size5'] = np.nan
+        for i in range(1, 6):
+            df_new[f'size{i}'] = np.nan
         df_new['size_sys'] = ['DE / NL / SE / PL'] * length
         df_new['Alpha'] = ['Alphanumerisch'] * length
         size_map = [
@@ -472,11 +482,30 @@ def amazon(mubiao_file,source_file,CiBiao,account,TG_VP,price,shipping,leixing,s
                                                                                                             "S") for
             string in size]
         size = [
-            str(string).replace("XX", "2X").replace("XXX", "3X").replace("XXXX", "4X").replace("XXXXX", "5X").replace(
+            str(string).replace("XXX", "3X").replace("XXXX", "4X").replace("XXXXX", "5X").replace(
                 "XXXXXXX", "6X") for string in size_map]
         df_new['size'] = size
         df_new['body_type'] = ['Regular'] * length
         df_new['height_type'] = ['Regular'] * length
+        for i in range(11, 16):
+            df_new[f'size{i}'] = np.nan
+    elif leixing == "shirt":
+        for i in range(1, 11):
+            df_new[f'size{i}'] = np.nan
+        df_new['size_sys'] = ['DE / NL / SE / PL'] * length
+        df_new['Alpha'] = ['Alphanumerisch'] * length
+        size_map = [
+            str(string).replace("2X", "XX").replace("3X", "XXX").replace("4X", "XXXX").replace("5X", "XXXXX").replace(
+                "6X", "XXXXXX").replace("-Large", "L").replace("Large", "L").replace("Medium", "M").replace("Small",
+                                                                                                            "S") for
+            string in size]
+        size = [
+            str(string).replace("XXX", "3X").replace("XXXX", "4X").replace("XXXXX", "5X").replace(
+                "XXXXXXX", "6X") for string in size_map]
+        df_new['size'] = size
+        df_new['body_type'] = ['Regular'] * length
+        df_new['height_type'] = ['Regular'] * length
+
 
 
 

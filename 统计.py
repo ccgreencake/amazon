@@ -2,8 +2,8 @@ import pandas as pd
 import re
 
 # ========== 配置区域 ==========
-input_file = r"C:\Users\Administrator\Downloads\merged_file (16).xlsx"   # 输入文件
-output_file = r"C:\Users\Administrator\Downloads\output0912 .xlsx" # 输出文件
+input_file = r"C:\Users\Administrator\Downloads\merged_file (18).xlsx"   # 输入文件
+output_file = r"C:\Users\Administrator\Downloads\output0925 .xlsx" # 输出文件
 # =============================
 
 def clean_days(x):

@@ -1,8 +1,5 @@
-import Amazon
+from 上架 import Amazon, utils
 from datetime import datetime
-
-import utils
-
 
 
 def generate_filename(day, prefix,number):
@@ -11,15 +8,18 @@ def generate_filename(day, prefix,number):
         prefix = "yo"
     elif prefix == "LIANG":
         prefix = "li"
-    elif prefix == "SIYAT":
-        prefix = "si"
+    elif prefix == "QMTIY":
+        prefix = "qm"
+    elif prefix == "SGTED":
+        prefix = "sg"
+
 
     target_filename = f"{prefix}{day}{number}.xlsx"
-    return rf'C:\Users\Administrator\Desktop\{day}\{target_filename}'
+    return rf'F:\上架\{day}\{target_filename}'
 
 def generate_source_filename(day, number):
     # 生成源文件名
-    return rf'C:\Users\Administrator\Desktop\product\{day}\product_{number}.xls'
+    return rf'F:\product\{day}\product_{number}.xls'
 
 # 根据子标题拼接成ST
 fangfa = 0
@@ -41,26 +41,29 @@ zuhe = 0
 
 account = "LIANG"
 account = "YOULE"
-# account = "SIYAT"
+# account = "QMTIY"
+# account = "SGTED"
 # account = "zz"
 # account = "lc"
 
 
 
-style = 'Classic'
+style = 'Casual'
 
 
-CiBiao = 'men sweatpants'
+CiBiao = 'men tactical pants'
 leixing = 'pants'
 TG = 1
 
 price = 9.99
-shipping = 4.99
+shipping = 1.99
 count = 0
 all_path = []
 item_type = ''
 manufacturer = 'Bakgeerle'
-for i in range(3):
+puhuo = 4
+
+for i in range(1):
     no = 1
     color_number = i+no
     #正常上架
@@ -73,16 +76,16 @@ for i in range(3):
     if TG == -1:
         TG_VP = 'P'
         if count % 5 == 0:
-            price = 1 + price
-            shipping = shipping - 1
+            price = price - 1
+            shipping = shipping + 1
         count+=1
     elif i == 0 and TG == 1:
         TG_VP = 'T'
-        price = 29.99
+        price = 42.49
         shipping = 0
     else:
         TG_VP = 'C'
-        price = i + 6.99
+        price = i + 9.99
         shipping = 4.99 - i
 
 
@@ -98,14 +101,15 @@ for i in range(3):
     # 使用函数生成文件路径
     mubiao_file = generate_filename(day, account, number)
     source_file = generate_source_filename(day,number)
-    file_path = Amazon.amazon(source_file,CiBiao,account,TG_VP,price,shipping,leixing,style,fangfa,color_number,zuhe,zibiao,item_type,manufacturer)
+    file_path = Amazon.amazon(source_file, CiBiao, account, TG_VP, price, shipping, leixing, style, fangfa, color_number, zuhe, zibiao, item_type, manufacturer)
     if TG_VP == 'P':
         all_path.append(file_path)
     else:
-        utils.copy_file(mubiao_file, file_path, TG_VP, color_number,account)
+        utils.copy_file(mubiao_file, file_path, TG_VP, color_number, account)
 
 if TG == -1:
+    ph = f"{puhuo:02d}"
     current_date_str = datetime.now().strftime('%Y%m%d')
     day = current_date_str[2:]
-    mubiao_file = generate_filename(day, account, '04')
-    utils.copy_file(mubiao_file, all_path, 'P',4,account)
+    mubiao_file = generate_filename(day, account, ph)
+    utils.copy_file(mubiao_file, all_path, 'P', puhuo, account)

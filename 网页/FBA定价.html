@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FBA定价计算器</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { padding: 20px; background: #f6f8fa; }
+    .card { margin-bottom: 16px; }
+    .small-muted { font-size: 0.85rem; color:#6c757d; }
+    #chartContainer { height: 360px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace; }
+    .result-num { font-weight:700; font-size:1.15rem; }
+    .calc-msg { margin-top: 10px; color:#0d6efd; font-size:0.95rem; }
+    table th, table td { vertical-align: middle; text-align: center; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2 class="mb-3">FBA定价计算器</h2>
+
+  <div class="row">
+    <div class="col-lg-5">
+      <div class="card p-3">
+        <h5>输入参数</h5>
+        <div class="mb-2">
+          <label class="form-label">毛重（克 g）</label>
+          <input id="weightG" type="number" min="0" step="1" class="form-control" value="500">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">采购成本（人民币 CNY）</label>
+          <input id="costCNY" type="number" min="0" step="0.01" class="form-control" value="30">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">目的分区（头程单价 RMB/kg）</label>
+          <div id="regionRadios" class="d-flex gap-2 flex-wrap">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="region" id="region_west" value="44.8" checked>
+              <label class="form-check-label" for="region_west">美西 — 44.8 RMB/kg</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="region" id="region_mid" value="45.8">
+              <label class="form-check-label" for="region_mid">美中 — 45.8 RMB/kg</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="region" id="region_east" value="46.8">
+              <label class="form-check-label" for="region_east">美东 — 46.8 RMB/kg</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">FBA配送费（USD）</label>
+          <input id="fbaFeeUsd" type="number" min="0" step="0.01" class="form-control" value="3.99">
+          <div class="small-muted">默认 3.99 USD，可按实际填写。</div>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">USD ↔ CNY 汇率（CNY per USD）</label>
+          <input id="usdToCny" type="number" min="1" step="0.01" class="form-control" value="7.05">
+          <div class="small-muted">将人民币金额除以此汇率得到美元。</div>
+        </div>
+
+        <hr>
+
+        <div class="mb-2">
+          <label class="form-label">参考售价（USD）</label>
+          <input id="priceUsd" type="number" min="0.01" step="0.01" class="form-control" value="31.73">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">期望毛利率（%） — 计算目标售价</label>
+          <div class="input-group">
+            <input id="targetMargin" type="number" min="0" max="90" step="0.1" class="form-control" value="22">
+            <button id="solvePriceBtn" class="btn btn-primary">计算目标售价</button>
+          </div>
+          <div id="calcMsg" class="calc-msg"></div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button id="recalcBtn" class="btn btn-success">刷新全部计算 & 更新曲线</button>
+        </div>
+      </div>
+
+      <div class="card p-3">
+        <h5>说明 / 规则速览</h5>
+        <ul>
+          <li>预设退款 = 售价 * 20%</li>
+          <li>预设广告 = 售价 * 3%</li>
+          <li>其它费用 = 售价 * 2%</li>
+          <li>FBA 佣金：售价 &lt; $15 → 5%；售价 &lt; $20 → 10%；否则 → 17%</li>
+          <li>头程与采购为人民币，界面会自动换算成 USD（除以你填写的汇率）。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="card p-3 mb-3">
+        <h5>计算结果（即时）</h5>
+        <div class="row gx-2 gy-2">
+          <div class="col-md-6">
+            <div class="small-muted">头程（RMB/kg * 克重）</div>
+            <div class="result-num mono" id="headRmb">— RMB</div>
+            <div class="small-muted">头程 (USD)</div>
+            <div class="result-num mono" id="headUsd">— USD</div>
+          </div>
+          <div class="col-md-6">
+            <div class="small-muted">采购成本 (RMB)</div>
+            <div class="result-num mono" id="costRmb">— RMB</div>
+            <div class="small-muted">采购成本 (USD)</div>
+            <div class="result-num mono" id="costUsd">— USD</div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="small-muted">预设退款 (20%)</div>
+            <div class="result-num mono" id="refundUsd">— USD</div>
+            <div class="small-muted">预设广告 (3%)</div>
+            <div class="result-num mono" id="adUsd">— USD</div>
+            <div class="small-muted">其它费用 (2%)</div>
+            <div class="result-num mono" id="otherUsd">— USD</div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="small-muted">FBA 配送费 (USD)</div>
+            <div class="result-num mono" id="fbaFeeShow">— USD</div>
+            <div class="small-muted">FBA 佣金 (%)</div>
+            <div class="result-num mono" id="commissionPct">— %</div>
+            <div class="small-muted">FBA 佣金 (USD)</div>
+            <div class="result-num mono" id="commissionUsd">— USD</div>
+          </div>
+
+          <div class="col-12 mt-2">
+            <div class="small-muted">售价 (USD)</div>
+            <div class="result-num mono" id="priceShow">— USD</div>
+            <div class="small-muted">毛利润 (USD)</div>
+            <div class="result-num mono text-success" id="grossUsd">— USD</div>
+            <div class="small-muted">毛利率</div>
+            <div class="result-num mono" id="grossPct">— %</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-3 mb-3">
+        <h5>售价 vs 毛利率 曲线（0% - 30%）</h5>
+        <div id="chartContainer">
+          <canvas id="marginChart"></canvas>
+        </div>
+        <div class="small-muted mt-2">若某个毛利率无法达成，则曲线该点为空白。</div>
+      </div>
+
+      <div class="card p-3">
+        <h5>亚马逊物流配送费用表（克 g）</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>尺寸分段</th>
+                <th>发货重量 (克)</th>
+                <th>亚马逊物流配送费用</th>
+                <th>低价商品物流费</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td rowspan="4">小号标准尺寸</td><td>≤ 113g</td><td>$3.50</td><td>$2.73</td></tr>
+              <tr><td>113-227g</td><td>$3.67</td><td>$2.90</td></tr>
+              <tr><td>227-340g</td><td>$3.99</td><td>$3.22</td></tr>
+              <tr><td>340-454g</td><td>$4.27</td><td>$3.50</td></tr>
+
+              <tr><td rowspan="7">大号标准尺寸</td><td>≤ 113g</td><td>$4.56</td><td>$3.79</td></tr>
+              <tr><td>113-227g</td><td>$4.77</td><td>$4.00</td></tr>
+              <tr><td>227-340g</td><td>$5.00</td><td>$4.23</td></tr>
+              <tr><td>340-454g</td><td>$5.46</td><td>$4.69</td></tr>
+              <tr><td>454-680g</td><td>$6.27</td><td>$5.50</td></tr>
+              <tr><td>680-907g</td><td>$6.53</td><td>$5.76</td></tr>
+              <tr><td>907-1134g</td><td>$7.04</td><td>$6.27</td></tr>
+
+              <tr><td></td><td>1134-1360g</td><td>$7.27</td><td>$6.50</td></tr>
+              <tr><td></td><td>1360-9072g</td><td>$7.59 + 每227g $0.16</td><td>$6.82 + 每227g $0.16</td></tr>
+
+              <tr><td>大号大件</td><td>0-22680g</td><td>$10.65 + 每454g $0.38</td><td>$9.88 + 每454g $0.38</td></tr>
+              <tr><td>超大件</td><td>0-22680g</td><td>$29.06 + 每454g $0.38</td><td>$28.29 + 每454g $0.38</td></tr>
+              <tr><td></td><td>22680-31751g</td><td>$42.93 + 每454g $0.75</td><td>$42.16 + 每454g $0.75</td></tr>
+              <tr><td></td><td>31751-68039g</td><td>$59.23 + 每454g $0.75</td><td>$58.46 + 每454g $0.75</td></tr>
+              <tr><td></td><td>68039g+</td><td>$203.46 + 每454g $0.19</td><td>$202.69 + 每454g $0.19</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  function $(id){ return document.getElementById(id); }
+  function fmtMoney(v){ return (isFinite(v) ? v.toFixed(2) : '—'); }
+
+  function getRegionRateRmb(){
+    const radios = document.getElementsByName('region');
+    for (const r of radios) if (r.checked) return parseFloat(r.value);
+    return 44.8;
+  }
+  function commissionRateForPrice(priceUsd){
+    if (priceUsd < 15) return 0.05;
+    if (priceUsd < 20) return 0.10;
+    return 0.17;
+  }
+
+  function calculateForPrice(priceUsd, inputs){
+    const wKg = inputs.weightG / 1000;
+    const headRmb = wKg * inputs.regionRmbPerKg;
+    const headUsd = headRmb / inputs.usdToCny;
+    const costUsd = inputs.costCNY / inputs.usdToCny;
+    const refundUsd = priceUsd * 0.20;
+    const adUsd = priceUsd * 0.03;
+    const otherUsd = priceUsd * 0.02;
+    const fbaFeeUsd = inputs.fbaFeeUsd;
+    const commissionRate = commissionRateForPrice(priceUsd);
+    const commissionUsd = priceUsd * commissionRate;
+    const grossUsd = priceUsd - refundUsd - adUsd - otherUsd - headUsd - costUsd - commissionUsd - fbaFeeUsd;
+    return { priceUsd, headRmb, headUsd, costUsd, refundUsd, adUsd, otherUsd, fbaFeeUsd, commissionRate, commissionUsd, grossUsd };
+  }
+
+  function computeAll(priceUsd){
+    const inputs = {
+      weightG: parseFloat($('weightG').value) || 0,
+      costCNY: parseFloat($('costCNY').value) || 0,
+      regionRmbPerKg: parseFloat(getRegionRateRmb()),
+      fbaFeeUsd: parseFloat($('fbaFeeUsd').value) || 0,
+      usdToCny: parseFloat($('usdToCny').value) || 1
+    };
+    const res = calculateForPrice(priceUsd, inputs);
+    const grossPct = (res.priceUsd > 0) ? (res.grossUsd / res.priceUsd) : NaN;
+    return Object.assign({}, res, { grossPct });
+  }
+
+  function solvePriceForTargetMargin(targetMarginFrac){
+    const inputs = {
+      weightG: parseFloat($('weightG').value) || 0,
+      costCNY: parseFloat($('costCNY').value) || 0,
+      regionRmbPerKg: parseFloat(getRegionRateRmb()),
+      fbaFeeUsd: parseFloat($('fbaFeeUsd').value) || 0,
+      usdToCny: parseFloat($('usdToCny').value) || 1
+    };
+    function marginMinusTarget(price){
+      const c = calculateForPrice(price, inputs);
+      const margin = (price > 0) ? (c.grossUsd / price) : -Infinity;
+      return margin - targetMarginFrac;
+    }
+    let lo = 0.01, hi = 5000;
+    const valLo = marginMinusTarget(lo);
+    const valHi = marginMinusTarget(hi);
+    if (valHi < 0) return null;
+    if (valLo >= 0) return lo;
+    for (let i=0;i<80;i++){
+      const mid = (lo+hi)/2;
+      const v = marginMinusTarget(mid);
+      if (v >= 0) hi = mid; else lo = mid;
+    }
+    return (lo+hi)/2;
+  }
+
+  function buildCurve(){
+    const points = [];
+    for (let pct=0; pct<=30; pct++){
+      const price = solvePriceForTargetMargin(pct/100);
+      points.push({margin:pct, price: price});
+    }
+    return points;
+  }
+
+  let chart = null;
+  function renderChart(points){
+    const ctx = document.getElementById('marginChart').getContext('2d');
+    const labels = points.map(p => p.margin + '%');
+    const data = points.map(p => (p.price ? Number(p.price.toFixed(2)) : null));
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [{ label: '售价 (USD)', data, borderColor: '#007bff', tension:0.25, pointRadius:4 }]},
+      options: { responsive:true, plugins:{ legend:{display:false}}, scales:{ y:{ beginAtZero:true } } }
+    });
+  }
+
+  function refreshUI(priceUsdInput){
+    const priceUsd = parseFloat(priceUsdInput) || 0;
+    const calc = computeAll(priceUsd);
+    $('headRmb').textContent = fmtMoney(calc.headRmb) + ' RMB';
+    $('headUsd').textContent = fmtMoney(calc.headUsd) + ' USD';
+    $('costRmb').textContent = fmtMoney(parseFloat($('costCNY').value || 0)) + ' RMB';
+    $('costUsd').textContent = fmtMoney(calc.costUsd) + ' USD';
+    $('refundUsd').textContent = fmtMoney(calc.refundUsd) + ' USD';
+    $('adUsd').textContent = fmtMoney(calc.adUsd) + ' USD';
+    $('otherUsd').textContent = fmtMoney(calc.otherUsd) + ' USD';
+    $('fbaFeeShow').textContent = fmtMoney(calc.fbaFeeUsd) + ' USD';
+    $('commissionPct').textContent = (calc.commissionRate*100).toFixed(2) + '%';
+    $('commissionUsd').textContent = fmtMoney(calc.commissionUsd) + ' USD';
+    $('priceShow').textContent = fmtMoney(calc.priceUsd) + ' USD';
+    $('grossUsd').textContent = fmtMoney(calc.grossUsd) + ' USD';
+    $('grossPct').textContent = (isFinite(calc.grossPct) ? (calc.grossPct*100).toFixed(2) + '%' : '—');
+    renderChart(buildCurve());
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    refreshUI(parseFloat($('priceUsd').value));
+    $('recalcBtn').addEventListener('click', () => refreshUI(parseFloat($('priceUsd').value)));
+    ['weightG','costCNY','fbaFeeUsd','usdToCny','priceUsd'].forEach(id=>{
+      $(id).addEventListener('change', ()=>refreshUI(parseFloat($('priceUsd').value)));
+      if(id==='priceUsd') $(id).addEventListener('input', ()=>refreshUI(parseFloat($('priceUsd').value)));
+    });
+    document.getElementsByName('region').forEach(r=>r.addEventListener('change', ()=>refreshUI(parseFloat($('priceUsd').value))));
+    $('solvePriceBtn').addEventListener('click', () => {
+      const target = parseFloat($('targetMargin').value);
+      if (isNaN(target) || target < 0) { $('calcMsg').textContent = '请输入合法的目标毛利率（%）'; return; }
+      const solved = solvePriceForTargetMargin(target/100);
+      if (solved === null){ $('calcMsg').textContent = '无法满足该目标毛利率（目标过高或成本太高）。'; return; }
+      const rounded = Number(solved.toFixed(2));
+      $('priceUsd').value = rounded;
+      refreshUI(rounded);
+      $('calcMsg').textContent = '满足目标毛利率的售价：$' + rounded.toFixed(2);
+    });
+  });
+</script>
+</body>
+</html>
