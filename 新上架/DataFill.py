@@ -11,44 +11,54 @@ class AmazonTemplateFiller:
     工作流：传入路径 -> 自动备份 -> 初始化加载 -> 循环填充多列 -> 一次性保存
     """
 
-    def __init__(self, original_path, sheet_name='Template', header_row=4, start_row=7):
+    def __init__(self, original_path, file_index=None, sheet_name='Template', header_row=4, start_row=7):
         """
-        初始化：只需在这里传入一次路径，工具会自动复制副本到指定目录并加载。
+        初始化：工具会自动复制副本到 [按当天日期动态生成的文件夹]，并支持传入数字生成两位数的后缀编号。
+
+        :param original_path: 原模板文件路径
+        :param file_index: 传入数字 (如 1, 2, 10)，内部会自动转为 "01", "02", "10"
         """
         self.original_path = original_path
         self.sheet_name = sheet_name
         self.header_row = header_row
         self.start_row = start_row
 
-        # --- 修改部分开始 ---
-        # 1. 定义目标保存目录
-        target_dir = r'F:\上架\260410'
-
-        # 如果该目录不存在，则自动创建（防止报错）
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-
-        # 2. 获取当前日期，格式为 YYMMDD (例如 240520)
-        # %y 表示两位年份，%m 表示月份，%d 表示日期
+        # --- 动态建档修改部分开始 ---
+        # 1. 获取当前日期，格式为 YYMMDD (例如 240520)
         date_str = datetime.now().strftime('%y%m%d')
 
-        # 3. 提取原文件名并拼接新文件名
-        base_name = os.path.basename(original_path)  # 获取 yo_new.xlsx
-        file_name, file_ext = os.path.splitext(base_name)  # 分离成 ('yo_new', '.xlsx')
+        # 2. 动态定义目标保存目录
+        target_dir = os.path.join(r'F:\上架', date_str)
 
-        # 组合成新的完整路径：F:\...\新上架\yo_new_240520.xlsx
-        new_filename = f"{file_name}_{date_str}{file_ext}"
+        # 如果该目录不存在，则自动创建
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+            print(f"📁 自动创建今日工作目录: {target_dir}")
+
+        # 3. 提取原文件名并拼接新文件名
+        base_name = os.path.basename(original_path)
+        file_name, file_ext = os.path.splitext(base_name)
+
+        # 4. 组合成新的完整路径
+        if file_index is not None:
+            # 💡 核心细节优化：:02d 的意思是，把它当做整数处理，并且至少保留两位，不足的左边补0
+            # 1 -> "01", 9 -> "09", 10 -> "10", 99 -> "99"
+            suffix_str = f"{int(file_index):02d}"
+            new_filename = f"{file_name}_{date_str}_{suffix_str}{file_ext}"
+        else:
+            new_filename = f"{file_name}_{date_str}{file_ext}"
+
         self.new_path = os.path.join(target_dir, new_filename)
-        # --- 修改部分结束 ---
+        # --- 动态建档修改部分结束 ---
 
         try:
-            # 4. 复制物理文件
+            # 5. 复制物理文件
             shutil.copy2(self.original_path, self.new_path)
             print(f"✅ 文件已准备就绪")
             print(f"   源文件: {self.original_path}")
             print(f"   工作副本: {self.new_path}")
 
-            # 5. 将副本加载到内存中
+            # 6. 将副本加载到内存中
             self.wb = openpyxl.load_workbook(self.new_path)
 
             if self.sheet_name not in self.wb.sheetnames:
@@ -56,7 +66,7 @@ class AmazonTemplateFiller:
 
             self.sheet = self.wb[self.sheet_name]
 
-            # 6. 核心优化：建立列名映射字典
+            # 7. 建立列名映射字典
             self.col_map = {}
             for cell in self.sheet[self.header_row]:
                 if cell.value:
@@ -66,6 +76,8 @@ class AmazonTemplateFiller:
         except Exception as e:
             print(f"❌ 初始化失败: {e}")
             raise e
+
+
     def fill_column_data(self, target_col_name, data_list):
         """
         核心方法：填入一整列数据。

@@ -36,7 +36,7 @@ class SKUGenerator:
         # 例如：{'Blue': 'C101- Blue', 'Grey': 'C102- Gray'}
         color_mapping = {}
         for i, color in enumerate(unique_colors):
-            code = 101 + i  # 从 101 开始计数
+            code = 100 + i  # 从 100 开始计数
 
             # 特殊处理：根据你的示例，Grey 变成了 Gray
             display_name = str(color).strip()

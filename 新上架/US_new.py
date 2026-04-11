@@ -1,8 +1,36 @@
+import pandas as pd
+
 from 新上架 import DataClean
 from 新上架.Combination import TitleCombiner
 from 新上架.DataFill import AmazonTemplateFiller
+from 新上架.Utils import SystemTools
 
+char_prefix='T'
+if char_prefix == 'T':
+    price = 42.49
+    shipping = 0
+    list_price = price
+else:
+    price = 9.99
+    shipping = 4.99
+    list_price = price + shipping
 
+# 文件编号
+current_file_index = 1
+
+# 账号前缀
+brand='YOULE'
+# brand='LIANG'
+# 模板路径
+if brand == 'YOULE':
+    template_path = r'C:\Users\Administrator\Desktop\new_yo_template.xlsx'
+elif brand == 'LIANG':
+    template_path = r'C:\Users\Administrator\Desktop\new_li_template.xlsx'
+
+filler = AmazonTemplateFiller(
+    original_path=template_path,
+    file_index=current_file_index    # <-- 加上这行即可！
+)
 
 
 # type = "SWEATSHIRT"
@@ -13,24 +41,24 @@ from 新上架.DataFill import AmazonTemplateFiller
 # type = "SKIRT"
 # type = "SHORTS"
 type = "PANTS"
-brand='YOULE'
-char_prefix='T'
-if char_prefix == 'T':
-    price = 42.49
-    shipping = 0
-    list_price = price
-else:
-    price = 9.99
-    shipping = 4.99
-    list_price = price + shipping
+
+
 # 自定义sku
 sku_gen = DataClean.SKUGenerator(base_dir=r'F:\product')
 raw_df = sku_gen.run_sku_process(
-    file_index=1,
+    file_index=current_file_index,
     char_prefix=char_prefix,
     brand=brand
 )
 total_rows = len(raw_df)  # 列数
+
+# 替换代理链接
+if brand == 'YOULE':
+    raw_df = raw_df.replace('192.3.95.71', 'youl.yant88.xyz', regex=True)
+elif brand == 'LIANG':
+    raw_df = raw_df.replace('192.3.95.71', 'liang.yant88.xyz', regex=True)
+
+
 # 打印看看sku对不对
 # print(raw_df['custom_sku'])
 # 性别
@@ -140,6 +168,33 @@ else:
     # 如果你需要标准的 Python 二维列表结构 (List of Lists)，可以加上这一句：
     # 结果示例: [ ['url2', 'url3', 'url1', ...], ['url2', 'url3', 'url1', ...] ]
     images_2d_list = reordered_images_df.values.tolist()
+
+    # ==========================================
+    # ⭐ 新增逻辑：将第一个颜色的主图，替换为“代理链接1”
+    # ==========================================
+    if total_rows > 1 and "代理链接 1" in raw_df.columns:
+        # 1. 定位第一个颜色的名称（从索引 1 开始，即排除第 0 行父体）
+        first_color = str(raw_df['颜色'].iloc[1]).strip()
+
+        # 2. 获取要替换的目标链接 (代理链接1 的第一个子体数据)
+        target_override_url = raw_df['代理链接 1'].iloc[0]
+
+        # 3. 统计这个第一种颜色到底连续出现了几行
+        first_color_count = 0
+        for i in range(1, total_rows):
+            current_color = str(raw_df['颜色'].iloc[i]).strip()
+            if current_color == first_color:
+                first_color_count += 1
+            else:
+                break  # 一旦颜色变了，说明第一组颜色结束了，跳出循环
+
+        # 4. 如果目标链接有效，批量“掉包”二维列表中这几行的第 0 列数据
+        # 第 0 列即对应着填入 Excel 的 Main Image URL 列
+        if pd.notna(target_override_url) and str(target_override_url).lower() != 'nan':
+            print(f"🔄 正在将第 1 个颜色（{first_color}，共 {first_color_count} 行）的主图单独替换...")
+            for i in range(1, 1 + first_color_count):
+                images_2d_list[i][0] = str(target_override_url)
+    # ================== 新增结束 ==================
 swatch_image_url = raw_df["代理链接 2"]
 
 # 各种写死的列
@@ -151,11 +206,7 @@ quantity = "1000"
 
 
 
-# 模板路径
-template_path = r'C:\Users\Administrator\Desktop\new_yo_template.xlsx'
 
-# 实例化 (只写一次路径)
-filler = AmazonTemplateFiller(original_path=template_path)
 
 # 调用填充方法 (只传列名和列表)
 # 它会自动去第 4 行找这些字眼，然后从第 7 行往下填
@@ -170,9 +221,9 @@ filler.fill_column_skip_first("Color Map",colors_series)
 filler.fill_column_skip_first("Color",raw_df['自定义颜色'])
 
 # 填写价格和运费
-filler.fill_2d_data_skip_first('List Price',[str(list_price)] * total_rows)
-filler.fill_2d_data_skip_first('Your Price USD (Sell on Amazon, US)', [str(price)] * total_rows)
-filler.fill_2d_data_skip_first('Merchant Shipping Group (US)', [str(shipping)] * total_rows)
+filler.fill_column_skip_first('List Price',[str(list_price)] * total_rows)
+filler.fill_column_skip_first('Your Price USD (Sell on Amazon, US)', [str(price)] * total_rows)
+filler.fill_column_skip_first('Merchant Shipping Group (US)', [str(shipping)] * total_rows)
 
 # 填充大描述
 filler.fill_column_data("Product Description",[product_description] * total_rows)
@@ -183,6 +234,8 @@ size_system = ["US"] * total_rows
 size_class = ["Alpha"] * total_rows
 body_type = ["Regular"] * total_rows
 height_type = ["Regular"] * total_rows
+# 先替换尺码
+raw_df = raw_df.replace('XX-Large', 'XX-Large (xx_l)', regex=True)
 size = raw_df["亚马逊尺寸"]
 # 1. 定义类型到分类的映射关系
 type_to_category = {
@@ -215,9 +268,9 @@ if type == "ONE_PIECE_OUTFIT":
     filler.fill_column_skip_first("Size", size)
 
 
-parentage_level = ["child"] * total_rows
+parentage_level = ["Child"] * total_rows
 parent_sku = raw_df['custom_sku'][0]
-parentage_level[0] = "parent"
+parentage_level[0] = "Parent"
 item_condition = "New"
 variation_theme_name = ["SIZE/COLOR"] * total_rows
 import_designation = "Imported"
@@ -320,3 +373,11 @@ filler.fill_2d_data_backward("Bullet Point", bullets_2d_list)
 
 # 最后统一保存
 filler.save_and_close()
+
+# ⭐ 获取刚刚保存好的文件路径
+final_file_path = filler.new_path
+
+# 4. ⭐ 调用工具类，使用 WPS 自动打开该表格！
+SystemTools.open_with_wps(final_file_path)
+
+print("🎉 整个自动化流程全部结束！请在 WPS 中检查数据。")
