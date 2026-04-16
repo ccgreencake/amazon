@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 
 from 新上架 import DataClean
@@ -7,9 +9,9 @@ from 新上架.Utils import SystemTools
 
 char_prefix='T'
 if char_prefix == 'T':
-    price = 42.49
+    price = 32.49
     shipping = 0
-    list_price = price
+    list_price = 32.49
 else:
     price = 9.99
     shipping = 4.99
@@ -18,30 +20,59 @@ else:
 # 文件编号
 current_file_index = 1
 
-# 账号前缀
-brand='YOULE'
-# brand='LIANG'
-# 模板路径
-if brand == 'YOULE':
-    template_path = r'C:\Users\Administrator\Desktop\new_yo_template.xlsx'
-elif brand == 'LIANG':
-    template_path = r'C:\Users\Administrator\Desktop\new_li_template.xlsx'
 
+
+
+# 1. 基础设置
+type = "PANTS"  # 你的变量
+brand = 'LIANG'    # 'YOULE' 或 'LIANG'
+cibiao = 'barrel pants'
+# 性别
+gender = "women"
+# 2. 定义 type 到 文件名核心部分的映射关系 (根据图片显示)
+# 注意：这里把多个 type 指向了同一个合并后的文件名
+type_to_file_core = {
+    "DRESS":            "DRESS_SWEATSHIRT",
+    "SWEATSHIRT":       "DRESS_SWEATSHIRT",
+    "OVERALLS":         "OVERALLS_SHORTS_PANTS",
+    "SHORTS":           "OVERALLS_SHORTS_PANTS",
+    "PANTS":            "OVERALLS_SHORTS_PANTS",
+    "PANT":             "OVERALLS_SHORTS_PANTS",
+    "SHIRT":            "SHIRT",
+    "SKIRT":            "SKIRT",
+    "SWIMWEAR":         "SWIMWEAR",
+    "ONE_PIECE_OUTFIT": "ONE_PIECE_OUTFIT"
+}
+
+# 3. 根据品牌动态生成路径和文件名前缀
+# 假设 LIANG 的规律和 YOULE 一样（文件夹叫 LIANG模板，前缀是 li_）
+if brand == 'YOULE':
+    folder_name = "YOULE模板"
+    file_prefix = "yo_"
+elif brand == 'LIANG':
+    folder_name = "LIANG模板"
+    file_prefix = "li_"
+else:
+    raise ValueError(f"未知的品牌: {brand}")
+
+# 4. 自动获取对应的文件名核心
+core_name = type_to_file_core.get(type.upper())
+if not core_name:
+    raise ValueError(f"未定义的类型模板: {type}")
+
+# 5. 拼接完整路径
+# 路径结构：桌面 \ 品牌文件夹 \ 前缀_核心名.xlsx
+base_desktop_path = r'C:\Users\Administrator\Desktop'
+template_path = os.path.join(base_desktop_path, folder_name, f"{file_prefix}{core_name}.xlsx")
+
+# 测试输出
+print(f"当前识别到的模板路径为: {template_path}")
+
+# 6. 初始化填充器
 filler = AmazonTemplateFiller(
     original_path=template_path,
-    file_index=current_file_index    # <-- 加上这行即可！
+    file_index=current_file_index
 )
-
-
-# type = "SWEATSHIRT"
-# type = "OVERALLS"
-# type = "DRESS"
-# type = "ONE_PIECE_OUTFIT"
-# type = "SHIRT"
-# type = "SKIRT"
-# type = "SHORTS"
-type = "PANTS"
-
 
 # 自定义sku
 sku_gen = DataClean.SKUGenerator(base_dir=r'F:\product')
@@ -56,13 +87,10 @@ total_rows = len(raw_df)  # 列数
 if brand == 'YOULE':
     raw_df = raw_df.replace('192.3.95.71', 'youl.yant88.xyz', regex=True)
 elif brand == 'LIANG':
-    raw_df = raw_df.replace('192.3.95.71', 'liang.yant88.xyz', regex=True)
+    raw_df = raw_df.replace('192.3.95.71', 'lian.yant88.xyz', regex=True)
 
 
-# 打印看看sku对不对
-# print(raw_df['custom_sku'])
-# 性别
-gender = "men"
+
 # gender = "women"
 
 if gender == "men":
@@ -78,7 +106,7 @@ age_range_description = "Adult"
 special_size = "Big & Tall"
 pocket_description = "Utility Pocket"
 Brand = "Bakgeerle"
-cibiao = "men tactical pants"
+
 attributes = [
                 "baggy",
                 "casual",
@@ -199,7 +227,7 @@ swatch_image_url = raw_df["代理链接 2"]
 
 # 各种写死的列
 
-listing_action = ["updateCreate or Replace (Full Update)"] * total_rows
+listing_action = ["Create or Replace (Full Update)"] * total_rows
 product_type = [type] * total_rows
 brand_name = [Brand] * total_rows
 quantity = "1000"
@@ -223,7 +251,8 @@ filler.fill_column_skip_first("Color",raw_df['自定义颜色'])
 # 填写价格和运费
 filler.fill_column_skip_first('List Price',[str(list_price)] * total_rows)
 filler.fill_column_skip_first('Your Price USD (Sell on Amazon, US)', [str(price)] * total_rows)
-filler.fill_column_skip_first('Merchant Shipping Group (US)', [str(shipping)] * total_rows)
+filler.fill_column_skip_first('Your Price USD (Amazon Business (B2B), US)', [str(price)] * total_rows)
+filler.fill_column_skip_first('Shipping Template (US)', [str(shipping)] * total_rows)
 
 # 填充大描述
 filler.fill_column_data("Product Description",[product_description] * total_rows)
@@ -240,32 +269,41 @@ size = raw_df["亚马逊尺寸"]
 # 1. 定义类型到分类的映射关系
 type_to_category = {
     "SWEATSHIRT": "Apparel",
-    "DRESS":      "Apparel",
-    "OVERALLS":   "Bottoms",
-    "SHORTS":     "Bottoms",
-    "PANTS":      "Bottoms",
-    "PANT":       "Bottoms",  # 兼容你之前的写法
-    "SHIRT":      "Shirt",
-    "SKIRT":      "Skirt",
+    "DRESS": "Apparel",
+    "OVERALLS": "Bottoms",
+    "SHORTS": "Bottoms",
+    "PANTS": "Bottoms",
+    "PANT": "Bottoms",
+    "SHIRT": "Shirt",
+    "SKIRT": "Skirt",
+    "SWIMWEAR": "",  # <--- 新增：设为空字符串，表示没有前缀
 }
 
-# 2. 获取当前 type 对应的分类名
-# 使用 .get() 可以防止 type 不在字典里时程序报错
-category = type_to_category.get(type.upper())
+# 2. 统一转为大写处理，防止大小写不一致
+current_type = type.upper()
 
-# 3. 如果找到了对应的分类，则执行填充逻辑
-if category:
-    # 亚马逊的列名规律非常统一：{分类名} + {属性名}
-    filler.fill_column_skip_first(f"{category} Size System", size_system)
-    filler.fill_column_skip_first(f"{category} Size Class", size_class)
-    filler.fill_column_skip_first(f"{category} Body Type", body_type)
-    filler.fill_column_skip_first(f"{category} Height Type", height_type)
-    filler.fill_column_skip_first(f"{category} Size Value", size)
+# 3. 执行填充逻辑
+if current_type == "ONE_PIECE_OUTFIT":
+    # 特殊情况：只填一列 Size
+    filler.fill_column_skip_first("Size", size)
+
+elif current_type in type_to_category:
+    # 获取分类前缀
+    category = type_to_category[current_type]
+
+    # 核心逻辑：
+    # 如果 category 有值(如 "Apparel")，prefix 变成 "Apparel " (带空格)
+    # 如果 category 是空字符串(如 SWIMWEAR)，prefix 保持为 "" (无前缀，无空格)
+    prefix = f"{category} " if category else ""
+
+    filler.fill_column_skip_first(f"{prefix}Size System", size_system)
+    filler.fill_column_skip_first(f"{prefix}Size Class", size_class)
+    filler.fill_column_skip_first(f"{prefix}Body Type", body_type)
+    filler.fill_column_skip_first(f"{prefix}Height Type", height_type)
+    filler.fill_column_skip_first(f"{prefix}Size Value", size)
+
 else:
     print(f"⚠️ 警告：未定义的类型 '{type}'，请检查映射表。")
-# 特殊情况
-if type == "ONE_PIECE_OUTFIT":
-    filler.fill_column_skip_first("Size", size)
 
 
 parentage_level = ["Child"] * total_rows
@@ -282,6 +320,7 @@ item_package_width = "20"
 package_width_unit = "Centimeters"
 item_package_height = "2"
 package_height_unit = "Centimeters"
+
 package_weight = "150"
 package_weight_unit = "Grams"
 country_of_origin = "China"
@@ -292,6 +331,9 @@ pattern = "Solid"
 unit_count = "1"
 unit_count_type = "Count"
 closure_type = "Elastic Closure"
+closure_row = [closure_type,closure_type]
+# 使用列表推导式，直接生成具有 total_rows 行的二维矩阵
+closure_2d_list = [closure_row for _ in range(total_rows)]
 rise_style = "Mid Rise"
 leg_style = "Wide"
 weave_type = "Knit"
@@ -316,10 +358,13 @@ filler.fill_column_data("Age Range Description" ,[age_range_description] * total
 
 # 连续快速填写
 # 定义单行的模板数据
-material_row = ["Polyester", "Polyester", "Polyester", "71%Polyester,18%Cotton,11%Spandex","1","1"]
+material_row = ["Polyester", "Polyester", "Polyester", "71%Polyester,18%Cotton,11%Spandex"]
 # 使用列表推导式，直接生成具有 total_rows 行的二维矩阵
 material_2d_list = [material_row for _ in range(total_rows)]
-filler.fill_2d_data_backward("Item Package Quantity",material_2d_list)
+filler.fill_2d_data_backward("Fabric Type",material_2d_list)
+filler.fill_column_data("Number of Items",["1"] * total_rows)
+filler.fill_column_data("Item Package Quantity",["1"] * total_rows)
+
 filler.fill_column_skip_first("Special Size",[special_size] * total_rows)
 filler.fill_column_skip_first("Pocket Description",[pocket_description] * total_rows)
 filler.fill_column_data("Item Condition", [item_condition] * total_rows)
@@ -334,6 +379,11 @@ filler.fill_column_data("Item Package Height", [item_package_height] * total_row
 filler.fill_column_data("Package Height Unit", [package_height_unit] * total_rows)
 filler.fill_column_data("Package Weight", [package_weight] * total_rows)
 filler.fill_column_data("Package Weight Unit", [package_weight_unit] * total_rows)
+
+filler.fill_column_data("Package Length", [item_package_length] * total_rows)
+filler.fill_column_data("Package Weight", [item_package_width] * total_rows)
+filler.fill_column_data("Package Height", [item_package_height] * total_rows)
+
 filler.fill_column_data("Country of Origin", [country_of_origin] * total_rows)
 filler.fill_column_data("Item Weight", [item_weight] * total_rows)
 filler.fill_column_data("Item Weight Unit", [item_weight_unit] * total_rows)
@@ -341,11 +391,23 @@ filler.fill_column_data("Care Instructions", [care_instructions] * total_rows)
 filler.fill_column_data("Pattern", [pattern] * total_rows)
 filler.fill_column_data("Unit Count", [unit_count] * total_rows)
 filler.fill_column_data("Unit Count Type", [unit_count_type] * total_rows)
-filler.fill_column_data("Closure Type" , [closure_type] * total_rows)
+filler.fill_2d_data_backward("Closure Type" , closure_2d_list)
 filler.fill_column_data("Rise Style" , [rise_style] * total_rows)
 filler.fill_column_data("Leg Style" , [leg_style] * total_rows)
 filler.fill_column_data("Weave Type" , [weave_type] * total_rows)
+filler.fill_column_skip_first("Number of Pieces", ["1"] * total_rows)
 
+
+# 特别填充
+if type == "SWIMWEAR":
+    filler.fill_column_data("Swimwear Form Type",["Rash Guard"] * total_rows)
+    filler.fill_column_data("Battery Life Percentage", ["No Battery"] * total_rows)
+    filler.fill_column_data("Are batteries required?", ["NO"] * total_rows)
+    dangerous_goods_regulations = "Not Applicable"
+    dangerous_goods_regulations_row = [dangerous_goods_regulations, dangerous_goods_regulations,dangerous_goods_regulations,dangerous_goods_regulations,dangerous_goods_regulations]
+    # 使用列表推导式，直接生成具有 total_rows 行的二维矩阵
+    dangerous_goods_regulations_2d_list = [dangerous_goods_regulations_row for _ in range(total_rows)]
+    filler.fill_2d_data_backward("Dangerous Goods Regulations",dangerous_goods_regulations_2d_list)
 
 
 

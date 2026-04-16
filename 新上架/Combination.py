@@ -77,33 +77,68 @@ class TitleCombiner:
         keywords_pool = self._get_keywords_from_excel(flag, cibiao)
         random_strings = []
 
+        # 定义需要小写的介词、连词、冠词
+        lowercases = {"with", "and", "of", "in", "to", "for", "on", "at", "by", "a", "an", "the", "or", "from"}
+
+        def apply_custom_case(text):
+            """处理大小写：首字母大写，介词小写"""
+            if not text:
+                return ""
+            words = text.split()
+            result = []
+            for i, word in enumerate(words):
+                # 第一个单词，或者不在小写清单里的单词 -> 首字母大写
+                # 使用 word[0].upper() + word[1:] 可以保留类似 "USB" 这种全大写缩写
+                if i == 0 or word.lower() not in lowercases:
+                    if len(word) > 1:
+                        result.append(word[0].upper() + word[1:])
+                    else:
+                        result.append(word.upper())
+                else:
+                    # 在清单里的介词/连词 -> 转小写
+                    result.append(word.lower())
+            return " ".join(result)
+
         for idx in range(num):
+            # 基础标题处理
+            base_title = str(title_list[idx]).strip() if idx < len(title_list) else ""
+
             if idx == 0:
-                random_strings.append(str(title_list[idx]).strip()[:200])
-                continue
-
-            base_title = str(title_list[idx]).strip()
-            color_str = str(colors_series.iloc[idx]).strip() if idx < len(colors_series) else ""
-            max_len_for_keywords = 200 - len(base_title) - len(color_str) - 10
-
-            current_keywords = []
-            if max_len_for_keywords > 0 and keywords_pool:
-                shuffled_pool = random.sample(keywords_pool, len(keywords_pool))
-                current_len = 0
-                for word in shuffled_pool:
-                    if current_len + len(word) + 1 <= max_len_for_keywords:
-                        current_keywords.append(word)
-                        current_len += len(word) + 1
-
-            keyword_str = " ".join(current_keywords)
-            combined_text = f"{base_title} {keyword_str} {color_str}"
-            cleaned_text = self.smart_replace_and_clean(combined_text)
-
-            if len(cleaned_text) > 200:
-                allowed_mid_len = 200 - len(color_str) - 1
-                final_string = cleaned_text[:allowed_mid_len].rstrip() + " " + color_str
+                # --- 父标题逻辑：不拼接，只清洗并转换大小写 ---
+                cleaned_text = self.smart_replace_and_clean(base_title)
+                final_string = apply_custom_case(cleaned_text[:200])
             else:
-                final_string = cleaned_text
+                # --- 子标题逻辑：拼接关键词和颜色 ---
+                color_str = str(colors_series.iloc[idx]).strip() if idx < len(colors_series) else ""
+
+                # 1. 计算剩余空间并抽取关键词
+                max_len_for_keywords = 200 - len(base_title) - len(color_str) - 10
+                current_keywords = []
+                if max_len_for_keywords > 0 and keywords_pool:
+                    shuffled_pool = random.sample(keywords_pool, min(len(keywords_pool), 15))  # 限制抽取数提高效率
+                    current_len = 0
+                    for word in shuffled_pool:
+                        if current_len + len(word) + 1 <= max_len_for_keywords:
+                            current_keywords.append(word)
+                            current_len += len(word) + 1
+
+                keyword_str = " ".join(current_keywords)
+
+                # 2. 拼接
+                combined_text = f"{base_title} {keyword_str} {color_str}"
+
+                # 3. 清洗特殊符号
+                cleaned_text = self.smart_replace_and_clean(combined_text)
+
+                # 4. 长度截断（确保颜色在最后）
+                if len(cleaned_text) > 200:
+                    allowed_mid_len = 200 - len(color_str) - 1
+                    temp_text = cleaned_text[:allowed_mid_len].rstrip() + " " + color_str
+                else:
+                    temp_text = cleaned_text
+
+                # 5. 最后统一应用大小写转换
+                final_string = apply_custom_case(temp_text)
 
             random_strings.append(final_string)
 
@@ -117,42 +152,51 @@ class TitleCombiner:
         st_strings = []
 
         for idx in range(num):
-            base_title = str(title_list[idx]).strip()
+            # 基础标题直接转小写
+            base_title = str(title_list[idx]).strip().lower()
 
+            # 如果标题本身就超过250，直接截断返回
             if len(base_title) >= 250:
-                st_strings.append(base_title[:250].lower())
+                st_strings.append(base_title[:250])
                 continue
 
+            # 随机打乱属性池和关键词池
             shuffled_attrs = random.sample(attr_pool, len(attr_pool)) if attr_pool else []
             shuffled_keywords = random.sample(keywords_pool, len(keywords_pool)) if keywords_pool else []
 
             current_words = []
+            # 当前长度 = 基础标题长度 + 1个空格
             current_len = len(base_title) + 1
 
             a_idx = 0
             k_idx = 0
 
+            # 交替添加属性词和关键词，直到达到250字符上限
             while a_idx < len(shuffled_attrs) or k_idx < len(shuffled_keywords):
+                # 尝试添加属性词
                 if a_idx < len(shuffled_attrs):
-                    attr_word = shuffled_attrs[a_idx]
+                    attr_word = str(shuffled_attrs[a_idx]).strip().lower()  # 强制小写
                     if current_len + len(attr_word) <= 250:
                         current_words.append(attr_word)
                         current_len += len(attr_word) + 1
                     a_idx += 1
 
+                # 尝试添加关键词
                 if k_idx < len(shuffled_keywords):
-                    key_word = shuffled_keywords[k_idx]
+                    key_word = str(shuffled_keywords[k_idx]).strip().lower()  # 强制小写
                     if current_len + len(key_word) <= 250:
                         current_words.append(key_word)
                         current_len += len(key_word) + 1
                     k_idx += 1
 
+            # 拼接基础标题和后续补充词
             if current_words:
                 combined_text = f"{base_title} {' '.join(current_words)}"
             else:
                 combined_text = base_title
 
-            final_st = combined_text.lower()[:250].strip()
+            # 最终确保：全小写、去首尾空格、截断至250字符
+            final_st = combined_text.lower().strip()[:250]
             st_strings.append(final_st)
 
         return st_strings

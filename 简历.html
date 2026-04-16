@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>刘董彬 - 亚马逊运营简历</title>
+    <style>
+        /* 全局基础设置 */
+        :root {
+            --primary-color: #1a5276; /* 专业商务蓝 */
+            --text-color: #333333;
+            --light-bg: #f4f6f9;
+            --accent-color: #2b6cb0; /* 数据高亮蓝 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #e9ecef;
+            padding: 20px 0;
+        }
+
+        /* 简历A4纸容器 */
+        .resume-container {
+            max-width: 820px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 45px 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 强调数据的高亮样式 */
+        strong {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        /* 头部区域（包含信息和照片） */
+        .header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .header-info h1 {
+            font-size: 32px;
+            color: var(--primary-color);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .contact-info {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .contact-info span {
+            margin-right: 15px;
+        }
+
+        .photo-box {
+            width: 120px;
+            height: 160px;
+            border-radius: 4px;
+            margin-left: 20px;
+            background-image: url("me.jpg");  /* 替换为您的图片名，比如 avatar.jpg */
+            background-size: cover;
+            background-position: center;
+            border: none;
+            color: transparent; /* 隐藏里面的“免冠照片”四个字 */
+        }
+
+        /* 核心优势总结区块 */
+        .summary-box {
+            background-color: var(--light-bg);
+            border-left: 4px solid var(--primary-color);
+            padding: 12px 15px;
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 25px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* 模块标题 */
+        .section-title {
+            font-size: 18px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            margin-top: 25px;
+        }
+
+        .section-title span {
+            margin-right: 8px;
+            font-size: 20px;
+        }
+
+        /* 工作经历区块 */
+        .company-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+        }
+
+        .company-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .date-range {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .role-group {
+            margin-bottom: 15px;
+        }
+
+        .role-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            margin-top: 10px;
+        }
+
+        /* 列表通用样式 */
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            position: relative;
+            padding-left: 14px;
+            margin-bottom: 6px;
+            font-size: 14.5px;
+            text-align: justify;
+        }
+
+        li::before {
+            content: "•";
+            color: var(--primary-color);
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-weight: bold;
+        }
+
+        .bullet-title {
+            font-weight: 600;
+            color: #222;
+        }
+
+        /* 特长模块特殊的间距缩减 */
+        .compact-list li {
+            margin-bottom: 8px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="resume-container">
+
+    <!-- 头部区域 -->
+    <header class="header-wrapper">
+        <div class="header-info">
+            <h1>刘董彬</h1>
+            <div class="contact-info">
+                <span><strong>籍贯：</strong>广东省深圳市</span>
+                <span><strong>生日：</strong>2002.01.08</span><br>
+                <span><strong>电话 / 微信：</strong>15907675340</span>
+                <span><strong>邮箱：</strong>dobi0108@icloud.com</span>
+            </div>
+        </div>
+        <!-- 替换照片：在CSS的.photo-box中加入background-image即可 -->
+        <div class="photo-box">免冠照片</div>
+    </header>
+
+    <!-- 核心优势 -->
+    <div class="summary-box">
+        <strong>核心优势：</strong>2年亚马逊北美站精细化运营与团队管理经验，具备“运营策略+IT自动化(RPA/Python)”复合型能力。
+    </div>
+
+    <!-- 工作经历 -->
+    <section>
+        <h2 class="section-title"><span>💼</span>工作经历</h2>
+
+        <div class="company-header">
+            <div class="company-name">深圳市弘钧科技有限公司 | 亚马逊运营主管 / 导师</div>
+            <div class="date-range">2024.03 - 至今</div>
+        </div>
+
+        <div class="role-group">
+            <div class="role-title">▶ 亚马逊运营主管（2026.02 - 至今）</div>
+            <ul>
+                <li><span class="bullet-title">团队管理与利润统筹：</span>全面负责运营小组的日常统筹与策略制定，把控团队整体预算、定价策略与供应链流转。带领团队实现<strong>月销峰值突破 14 万美元</strong>，并严格控制各项成本，将团队整体<strong>利润率稳定在 24% 的高水准</strong>。</li>
+                <li><span class="bullet-title">工作流自动化改革（影刀 RPA）：</span>考取<strong>影刀初级证书</strong>并将其引入团队日常SOP。独立搭建自动化工作流，实现团队跨店铺销售数据自动统计、底层数据自动整合，以及售后与索评邮件的自动化发送，将团队枯燥的数据统计时间<strong>缩减 80% 以上</strong>，大幅提升人效。</li>
+            </ul>
+        </div>
+
+        <div class="role-group">
+            <div class="role-title">▶ 亚马逊高级运营 / 导师（2024.03 - 2026.01）</div>
+            <ul>
+                <li><span class="bullet-title">业绩破局与精细化运营：</span>入职3个月实现单账号月销破 1 万美元；后续深度参与 Listing 优化与市场拓展，推动个人负责店铺<strong>月销峰值达 8 万美元</strong>，贡献当时团队总销售额的 40%。</li>
+                <li><span class="bullet-title">广告策略与效益优化：</span>结合销售目标制定北美站点广告策略，利用 Python 关键词分析脚本精准筛选高转化词，动态调整竞价与预算，成功将<strong>广告 ACoS 由 80% 大幅降至 20%</strong>。</li>
+                <li><span class="bullet-title">数据分析与工具自研：</span>定期监控竞品生命周期与 Review 趋势；自研 Python 数据处理与词频分析脚本（Excel数据整合、销售统计），将单批产品上架与文案优化时间<strong>由 3 小时缩短至 30 分钟</strong>。</li>
+                <li><span class="bullet-title">团队带教：</span>入职一年即晋升为导师岗，负责新人 0-1 体系化培训及小组日常运营策略的纠偏与优化。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 教育背景 -->
+    <section>
+        <h2 class="section-title"><span>🎓</span>教育背景</h2>
+        <div class="company-header">
+            <div class="company-name">广东金融学院 | 信息与计算科学（全日制本科）</div>
+            <div class="date-range">2020.09 - 2024.06</div>
+        </div>
+        <ul>
+            <li><span class="bullet-title">学业表现：</span>GPA 3.1 / 4.0（专业前 10%）</li>
+            <li><span class="bullet-title">个人荣誉：</span>第十一届“泰迪杯”数据挖掘挑战赛 <strong>全国二等奖</strong> | 2022年全国大学生数学建模竞赛 <strong>广东省三等奖</strong> | 第十届“泰迪杯”数据挖掘挑战赛 <strong>广东省优胜奖</strong></li>
+        </ul>
+    </section>
+
+    <!-- 技能与工具 -->
+    <section>
+        <h2 class="section-title"><span>🛠</span>技能与工具</h2>
+        <ul>
+            <li><span class="bullet-title">数据与自动化能力：</span>熟练掌握 <strong>影刀 RPA（持有初级证书）</strong>、Python 编程、Excel 高级公式与 VBA 函数，能独立开发运营辅助工具。</li>
+            <li><span class="bullet-title">语言能力：</span><strong>CET-6（英语六级）</strong>，可无障碍阅读 Amazon 英文资料、竞品页面并进行本土化文案深度分析。</li>
+            <li><span class="bullet-title">运营与设计工具：</span>熟练使用鸥鹭、数派等亚马逊数据分析工具；掌握基础 PS 及 AI 工具（如 ChatGPT）辅助图文优化与数据分析。</li>
+            <li><span class="bullet-title">专业技能：</span>团队统筹与利润核算、产品精细化运营、广告白帽打法、关键词词频挖掘、市场与竞品调研。</li>
+        </ul>
+    </section>
+
+    <!-- 优势特长 -->
+    <section>
+        <h2 class="section-title"><span>💡</span>优势特长</h2>
+        <ul class="compact-list">
+            <li><span class="bullet-title">兼具业务深度与管理视角：</span>从一线高产出运营稳步晋升为主管，既能沉下心打造单品 8 万美金的爆款，也能站定管理视角统筹团队，达成 14 万美金月销与 24% 利润率的团队目标。</li>
+            <li><span class="bullet-title">具备优秀的自动化与降本增效意识：</span>理科数据挖掘背景出身，对数据极度敏锐。从早期的 Python / VBA 脚本开发到如今的影刀 RPA 全流程部署，能独立为团队搭建自动化工作流，显著提升团队人效。</li>
+            <li><span class="bullet-title">跨类目迁移与快速学习能力：</span>对北美站市场结构及消费者底层搜索逻辑有深刻理解。对 3C 及家庭安防类市场有深入研究，能快速切入复杂类目、熟悉运营流程并沉淀出有效的破局打法。</li>
+        </ul>
+    </section>
+
+</div>
+
+</body>
+</html>
