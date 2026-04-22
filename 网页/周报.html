@@ -100,8 +100,8 @@
 </head>
 <body>
     <div class="container">
-        <h2>多账号周报文件处理<br><span style="font-size:14px;color:#888;">（可多次添加、跨文件夹）</span></h2>
-        <input type="file" id="fileInput" accept=".csv" >
+        <h2>多账号周报文件处理<br><span style="font-size:14px;color:#888;">（仅统计退款金额，支持多次添加）</span></h2>
+        <input type="file" id="fileInput" accept=".csv" multiple>
         <button onclick="processFiles()">处理所有上传文件</button>
         <div>
             <strong>已选文件：</strong>
@@ -116,7 +116,7 @@
         // 切换时，把新选的文件append进去selectedFiles（去重：同名文件将后选覆盖前选）
         document.getElementById('fileInput').addEventListener('change', function(e){
             const files = Array.from(e.target.files);
-            // 文件名唯一处理（可根据实际需要改为用lastModified等更严谨判重）
+            // 文件名唯一处理
             const fileMap = new Map();
             selectedFiles.forEach(file => fileMap.set(file.name, file));
             files.forEach(file => fileMap.set(file.name, file)); // 后选的覆盖前选的
@@ -153,25 +153,16 @@
             }
             resultDiv.innerHTML = '<div class="loading">处理中...</div>';
 
-            // 分类顺序及中文名
-            const order = [
-                'Refund',
-                'Shipping Services',
-                'SAFE-T reimbursement',
-                'Amazon Fees'
-            ];
+            // 当前仅需统计退款类型
+            const order = ['Refund'];
             const labelMap = {
-                'Refund': '退款',
-                'Shipping Services': '退货标签',
-                'SAFE-T reimbursement': '索赔',
-                'Amazon Fees': '优惠券'
+                'Refund': '退款金额'
             };
 
             // 汇总所有账号合计
             let totalSums = {};
             order.forEach(cat => totalSums[cat] = 0);
 
-            // 读取所有文件
             let processed = 0;
             let fileResults = new Array(selectedFiles.length);
 
@@ -181,33 +172,48 @@
                     reader.onload = function(e) {
                         try {
                             const text = e.target.result;
-                            const allLines = text.split(/\r\n|\n/).slice(8);
+                            const allLines = text.split(/\r\n|\n/);
 
-                            // 原始分类集合
-                            const validCategories = new Set(order);
+                            if (allLines.length < 10) {
+                                throw new Error('文件行数不足，无法找到第10行标题行');
+                            }
 
-                            // 单个文件结果
+                            // 获取第10行作为标题行（索引为9）
+                            const headerLine = allLines[9];
+                            // 用正则分割CSV行并去掉引号，转换为小写便于无视大小写匹配
+                            const headers = headerLine.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim().toLowerCase());
+
+                            // 查找 type 和 total 的列索引
+                            const typeIdx = headers.indexOf('type');
+                            const totalIdx = headers.indexOf('total');
+
+                            if (typeIdx === -1 || totalIdx === -1) {
+                                throw new Error('标题行中未找到 "type" 或 "total" 列，请确认格式');
+                            }
+
+                            // 第11行开始为数据
+                            const dataLines = allLines.slice(10);
+
+                            // 单个文件结果初始化
                             let results = {};
                             order.forEach(cat => results[cat] = 0);
 
-                            allLines.forEach(line => {
+                            dataLines.forEach(line => {
                                 if (!line.trim()) return;
                                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                                if (cols.length < 3) return;  // 最少要有3列才能取分类
-                                const category = cols[2].replace(/^"|"$/g, '').trim();
-                                if (!validCategories.has(category)) return;
+                                // 防止空行或被截断的行
+                                if (cols.length <= Math.max(typeIdx, totalIdx)) return;
 
-                                // Amazon Fees 只统计 Coupon 相关
-                                if (category === 'Amazon Fees') {
-                                    const col6 = cols[5]?.replace(/^"|"$/g, '').trim() || '';
-                                    if (!col6.includes('Coupon')) return;
+                                // 取出当前行的类型
+                                const category = cols[typeIdx].replace(/^"|"$/g, '').trim();
+
+                                // 只统计 Refund
+                                if (category === 'Refund') {
+                                    const valueStr = cols[totalIdx].replace(/[^\d.-]/g, '').trim() || '0';
+                                    const value = parseFloat(valueStr) || 0;
+                                    // 默认统计绝对值（退款一般在表里是负数，取绝对值更直观，如需保留原负号请移除Math.abs）
+                                    results['Refund'] += Math.abs(value);
                                 }
-
-                                // 动态取倒数第一列
-                                const lastCol = cols[cols.length - 1];
-                                const valueStr = lastCol.replace(/[^\d.-]/g, '').trim() || '0';
-                                const value = parseFloat(valueStr) || 0;
-                                results[category] += Math.abs(value);
                             });
 
                             // 累加到总和
@@ -220,10 +226,10 @@
                                 filename: file.name,
                                 results: results
                             };
-                        } catch (e) {
+                        } catch (err) {
                             fileResults[idx] = {
                                 filename: file.name,
-                                error: '处理失败: ' + escapeHtml(e.message)
+                                error: '处理失败: ' + escapeHtml(err.message)
                             };
                         }
 
@@ -248,49 +254,48 @@
         }
 
         function renderAllResults(fileResults, totalSums, resultDiv, order, labelMap) {
-    let html = '';
-    let hasData = false;
+            let html = '';
+            let hasData = false;
 
-    // 表格表头
-    html += `<table>
-                <tr>
-                    <th>文件名</th>
-                    ${order.map(cat => `<th>${escapeHtml(labelMap[cat] || cat)}</th>`).join('')}
-                </tr>`;
+            // 表格表头
+            html += `<table>
+                        <tr>
+                            <th>文件名</th>
+                            ${order.map(cat => `<th>${escapeHtml(labelMap[cat] || cat)}</th>`).join('')}
+                        </tr>`;
 
-    fileResults.forEach(fileResult => {
-        if (fileResult.error) {
-            html += `<tr><td colspan="${order.length + 1}" style="color: red">${escapeHtml(fileResult.filename)}: ${escapeHtml(fileResult.error)}</td></tr>`;
-            return;
+            fileResults.forEach(fileResult => {
+                if (fileResult.error) {
+                    html += `<tr><td colspan="${order.length + 1}" style="color: red">${escapeHtml(fileResult.filename)}: ${escapeHtml(fileResult.error)}</td></tr>`;
+                    return;
+                }
+
+                const rowData = order.map(cat =>
+                    typeof fileResult.results[cat] !== 'undefined'
+                        ? `<td>${fileResult.results[cat].toFixed(2)}</td>`
+                        : `<td>0.00</td>`
+                ).join('');
+
+                html += `<tr>
+                            <td>${escapeHtml(fileResult.filename)}</td>
+                            ${rowData}
+                        </tr>`;
+
+                if (Object.values(fileResult.results).some(val => val > 0)) {
+                    hasData = true;
+                }
+            });
+
+            // 总计行
+            html += `<tr style="font-weight:bold;color:#2e7d32;background:#e8f5e9;">
+                        <td>总计</td>
+                        ${order.map(cat => `<td>${totalSums[cat].toFixed(2)}</td>`).join('')}
+                     </tr>`;
+            html += `</table>`;
+
+            if (!hasData) html += `<div style="color: red; margin-top: 10px;">文件中没有匹配到"Refund"金额或均为 0</div>`;
+            resultDiv.innerHTML = html;
         }
-
-        const rowData = order.map(cat =>
-            typeof fileResult.results[cat] !== 'undefined'
-                ? `<td>${fileResult.results[cat].toFixed(2)}</td>`
-                : `<td>0.00</td>`
-        ).join('');
-
-        html += `<tr>
-                    <td>${escapeHtml(fileResult.filename)}</td>
-                    ${rowData}
-                </tr>`;
-
-        if (Object.values(fileResult.results).some(val => val > 0)) {
-            hasData = true;
-        }
-    });
-
-    // 总计行
-    html += `<tr style="font-weight:bold;color:#2e7d32;background:#e8f5e9;">
-                <td>总计</td>
-                ${order.map(cat => `<td>${totalSums[cat].toFixed(2)}</td>`).join('')}
-             </tr>`;
-    html += `</table>`;
-
-    if (!hasData) html = `<span style="color: red">没有匹配的数据</span>`;
-    resultDiv.innerHTML = html;
-}
-
 
         // 防止XSS攻击的HTML转义
         function escapeHtml(text) {
@@ -301,6 +306,7 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+
         // 初始化文件列表展示
         renderFileList();
     </script>

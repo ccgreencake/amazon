@@ -14,21 +14,21 @@ if char_prefix == 'T':
     list_price = 32.49
 else:
     price = 9.99
-    shipping = 4.99
+    shipping = 3.99
     list_price = price + shipping
 
 # 文件编号
-current_file_index = 1
+current_file_index = 3
 
 
 
 
 # 1. 基础设置
-type = "PANTS"  # 你的变量
-brand = 'LIANG'    # 'YOULE' 或 'LIANG'
-cibiao = 'barrel pants'
+type = "SHORTS"  # 你的变量
+brand = 'YOULE'    # 'YOULE' 或 'LIANG' 或 'SGTED'
+cibiao = 'men tactical shorts'
 # 性别
-gender = "women"
+gender = "men"
 # 2. 定义 type 到 文件名核心部分的映射关系 (根据图片显示)
 # 注意：这里把多个 type 指向了同一个合并后的文件名
 type_to_file_core = {
@@ -52,6 +52,9 @@ if brand == 'YOULE':
 elif brand == 'LIANG':
     folder_name = "LIANG模板"
     file_prefix = "li_"
+elif brand == 'SGTED':
+    folder_name = "SGTED模板"
+    file_prefix = "sg_"
 else:
     raise ValueError(f"未知的品牌: {brand}")
 
@@ -88,6 +91,8 @@ if brand == 'YOULE':
     raw_df = raw_df.replace('192.3.95.71', 'youl.yant88.xyz', regex=True)
 elif brand == 'LIANG':
     raw_df = raw_df.replace('192.3.95.71', 'lian.yant88.xyz', regex=True)
+elif brand == 'SGTED':
+    raw_df = raw_df.replace('192.3.95.71', 'sgte.yant88.xyz', regex=True)
 
 
 
@@ -105,7 +110,10 @@ life_style = "Casual"
 age_range_description = "Adult"
 special_size = "Big & Tall"
 pocket_description = "Utility Pocket"
-Brand = "Bakgeerle"
+if brand == "YOULE" or brand == "LIANG":
+    Brand = "Bakgeerle"
+else:
+    Brand = "Generic"
 
 attributes = [
                 "baggy",
@@ -200,29 +208,30 @@ else:
     # ==========================================
     # ⭐ 新增逻辑：将第一个颜色的主图，替换为“代理链接1”
     # ==========================================
-    if total_rows > 1 and "代理链接 1" in raw_df.columns:
-        # 1. 定位第一个颜色的名称（从索引 1 开始，即排除第 0 行父体）
-        first_color = str(raw_df['颜色'].iloc[1]).strip()
+    if char_prefix == 'T':
+        if total_rows > 1 and "代理链接 1" in raw_df.columns:
+            # 1. 定位第一个颜色的名称（从索引 1 开始，即排除第 0 行父体）
+            first_color = str(raw_df['颜色'].iloc[1]).strip()
 
-        # 2. 获取要替换的目标链接 (代理链接1 的第一个子体数据)
-        target_override_url = raw_df['代理链接 1'].iloc[0]
+            # 2. 获取要替换的目标链接 (代理链接1 的第一个子体数据)
+            target_override_url = raw_df['代理链接 1'].iloc[0]
 
-        # 3. 统计这个第一种颜色到底连续出现了几行
-        first_color_count = 0
-        for i in range(1, total_rows):
-            current_color = str(raw_df['颜色'].iloc[i]).strip()
-            if current_color == first_color:
-                first_color_count += 1
-            else:
-                break  # 一旦颜色变了，说明第一组颜色结束了，跳出循环
+            # 3. 统计这个第一种颜色到底连续出现了几行
+            first_color_count = 0
+            for i in range(1, total_rows):
+                current_color = str(raw_df['颜色'].iloc[i]).strip()
+                if current_color == first_color:
+                    first_color_count += 1
+                else:
+                    break  # 一旦颜色变了，说明第一组颜色结束了，跳出循环
 
-        # 4. 如果目标链接有效，批量“掉包”二维列表中这几行的第 0 列数据
-        # 第 0 列即对应着填入 Excel 的 Main Image URL 列
-        if pd.notna(target_override_url) and str(target_override_url).lower() != 'nan':
-            print(f"🔄 正在将第 1 个颜色（{first_color}，共 {first_color_count} 行）的主图单独替换...")
-            for i in range(1, 1 + first_color_count):
-                images_2d_list[i][0] = str(target_override_url)
-    # ================== 新增结束 ==================
+            # 4. 如果目标链接有效，批量“掉包”二维列表中这几行的第 0 列数据
+            # 第 0 列即对应着填入 Excel 的 Main Image URL 列
+            if pd.notna(target_override_url) and str(target_override_url).lower() != 'nan':
+                print(f"🔄 正在将第 1 个颜色（{first_color}，共 {first_color_count} 行）的主图单独替换...")
+                for i in range(1, 1 + first_color_count):
+                    images_2d_list[i][0] = str(target_override_url)
+        # ================== 新增结束 ==================
 swatch_image_url = raw_df["代理链接 2"]
 
 # 各种写死的列
@@ -361,6 +370,7 @@ filler.fill_column_data("Age Range Description" ,[age_range_description] * total
 material_row = ["Polyester", "Polyester", "Polyester", "71%Polyester,18%Cotton,11%Spandex"]
 # 使用列表推导式，直接生成具有 total_rows 行的二维矩阵
 material_2d_list = [material_row for _ in range(total_rows)]
+
 filler.fill_2d_data_backward("Fabric Type",material_2d_list)
 filler.fill_column_data("Number of Items",["1"] * total_rows)
 filler.fill_column_data("Item Package Quantity",["1"] * total_rows)
@@ -396,6 +406,11 @@ filler.fill_column_data("Rise Style" , [rise_style] * total_rows)
 filler.fill_column_data("Leg Style" , [leg_style] * total_rows)
 filler.fill_column_data("Weave Type" , [weave_type] * total_rows)
 filler.fill_column_skip_first("Number of Pieces", ["1"] * total_rows)
+danger_type = "Not Applicable"
+danger_row = [danger_type,danger_type,danger_type,danger_type,danger_type]
+# 使用列表推导式，直接生成具有 total_rows 行的二维矩阵
+danger_2d_list = [danger_row for _ in range(total_rows)]
+filler.fill_2d_data_backward("Dangerous Goods Regulations" , danger_2d_list)
 
 
 # 特别填充
