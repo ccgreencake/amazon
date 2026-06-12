@@ -141,7 +141,7 @@
 
         let headers = rows[0].map(h => h.trim().replace(/^"|"$/g, ''));
         let colMap = indexType === "new" ?
-          { activity: "广告活动名称", order: "购买量", sales: "销售额", spend: "总成本" } :
+          { activity: "广告活动名称", order: "购买", sales: "销售额", spend: "总成本" } :
           { activity: "广告活动", order: "订单", sales: "销售额(USD)", spend: "花费(USD)" };
 
         const indices = [colMap.activity, colMap.order, colMap.sales, colMap.spend].map(col => headers.indexOf(col));

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Size Measurement Dual Language Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.97);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto 20px;
+        }
+        
+        .input-section {
+            background-color: rgba(255, 255, 255, 0.97);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .output-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .output-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .output-section {
+            background-color: rgba(255, 255, 255, 0.97);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-bottom: 2px solid;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .en-title {
+            border-color: #4c6ef5;
+        }
+        
+        .de-title {
+            border-color: #ff6b6b;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .language-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .badge-en {
+            background-color: #4c6ef5;
+            color: white;
+        }
+        
+        .badge-de {
+            background-color: #ff6b6b;
+            color: white;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #4c6ef5;
+            box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.1);
+        }
+        
+        .btn-convert {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #4c6ef5, #3b5bdb);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .btn-convert:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .buttons-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background-color: #e9ecef;
+            border-color: #4c6ef5;
+            color: #4c6ef5;
+        }
+        
+        .example-btn {
+            padding: 10px 20px;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .example-btn:hover {
+            background-color: #bbdefb;
+        }
+        
+        .output-display {
+            min-height: 300px;
+            max-height: 400px;
+            padding: 20px;
+            border: 2px solid;
+            border-radius: 10px;
+            overflow: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f9f9f9;
+        }
+        
+        .en-output {
+            border-color: #4c6ef5;
+            background-color: #f0f4ff;
+        }
+        
+        .de-output {
+            border-color: #ff6b6b;
+            background-color: #fff0f0;
+        }
+        
+        .html-preview {
+            min-height: 200px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            overflow: auto;
+            background-color: #f8f9fa;
+            margin-top: 20px;
+        }
+        
+        .html-code {
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow: auto;
+            margin-top: 10px;
+        }
+        
+        .copy-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .copy-btn {
+            padding: 8px 16px;
+            background-color: #4c6ef5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background-color: #3b5bdb;
+        }
+        
+        .clear-btn {
+            padding: 8px 16px;
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .clear-btn:hover {
+            background-color: #fa5252;
+        }
+        
+        .translation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .translation-table th {
+            background-color: #4c6ef5;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .translation-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .translation-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .english-term {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .german-term {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .info-box {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 0.95rem;
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .toggle-label {
+            margin-right: 10px;
+            font-weight: 600;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4c6ef5;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+        }
+        
+        .preview-title {
+            font-size: 1.2rem;
+            margin: 20px 0 10px 0;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📏 尺寸测量双语言HTML转换器</h1>
+            <p class="subtitle">将英语尺寸测量描述同时转换为英语和德语的HTML格式输出。输入一次，同时获取两种语言的HTML代码，可直接用于多语言网站。</p>
+        </header>
+        
+        <div class="input-section">
+            <h2 class="section-title en-title">📝 输入英语尺寸描述</h2>
+            <textarea id="english-input" placeholder="在这里粘贴您的英语尺寸测量描述，例如：
+Size: S Waist: 68cm/26.77'' Hip: 110cm/43.31'' Inseam: 70cm/27.56'' Length: 100cm/39.37'' 
+Size: M Waist: 73cm/28.74'' Hip: 114cm/44.88'' Inseam: 71cm/27.95'' Length: 101cm/39.76'' 
+Size: L Waist: 78cm/30.71'' Hip: 120cm/47.24'' Inseam: 72cm/28.35'' Length: 102cm/40.16''">Size: S Waist: 68cm/26.77'' Hip: 110cm/43.31'' Inseam: 70cm/27.56'' Length: 100cm/39.37'' 
+Size: M Waist: 73cm/28.74'' Hip: 114cm/44.88'' Inseam: 71cm/27.95'' Length: 101cm/39.76'' 
+Size: L Waist: 78cm/30.71'' Hip: 120cm/47.24'' Inseam: 72cm/28.35'' Length: 102cm/40.16'' 
+Size: XL Waist: 83cm/32.68'' Hip: 126cm/49.61'' Inseam: 73cm/28.74'' Length: 103cm/40.55'' 
+Size: XXL Waist: 88cm/34.65'' Hip: 132cm/51.97'' Inseam: 74cm/29.13'' Length: 104cm/40.94'' 
+Size: XXXL Waist: 93cm/36.61'' Hip: 136cm/53.54'' Inseam: 75cm/29.53'' Length: 105cm/41.34''</textarea>
+            
+            <div class="buttons-row">
+                <button class="action-btn" id="load-example">加载示例</button>
+                <button class="action-btn" id="clear-input">清空输入</button>
+                <button class="btn-convert" id="convert-btn">转换到英语和德语</button>
+            </div>
+            
+            <div class="toggle-container">
+                <span class="toggle-label">实时转换:</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="realtime-toggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="output-sections">
+            <div class="output-section">
+                <div class="section-header">
+                    <h2 class="section-title en-title">
+                        <span class="language-badge badge-en">EN</span>
+                        英语HTML输出
+                    </h2>
+                </div>
+                
+                <div class="preview-title">HTML预览:</div>
+                <div class="output-display en-output" id="english-output">
+                    英语HTML输出将在这里显示...
+                </div>
+                
+                <div class="preview-title">HTML代码:</div>
+                <div class="html-code" id="english-html-code">
+                    <!-- 英语HTML代码将在这里显示 -->
+                </div>
+                
+                <div class="copy-buttons">
+                    <button class="copy-btn" id="copy-english-html">复制英语HTML</button>
+                    <button class="copy-btn" id="copy-english-text">复制英语文本</button>
+                </div>
+            </div>
+            
+            <div class="output-section">
+                <div class="section-header">
+                    <h2 class="section-title de-title">
+                        <span class="language-badge badge-de">DE</span>
+                        德语HTML输出
+                    </h2>
+                </div>
+                
+                <div class="preview-title">HTML预览:</div>
+                <div class="output-display de-output" id="german-output">
+                    德语HTML输出将在这里显示...
+                </div>
+                
+                <div class="preview-title">HTML代码:</div>
+                <div class="html-code" id="german-html-code">
+                    <!-- 德语HTML代码将在这里显示 -->
+                </div>
+                
+                <div class="copy-buttons">
+                    <button class="copy-btn" id="copy-german-html">复制德语HTML</button>
+                    <button class="copy-btn" id="copy-german-text">复制德语文本</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <h2 class="section-title">📖 翻译对照表</h2>
+            
+            <table class="translation-table">
+                <thead>
+                    <tr>
+                        <th>英语术语</th>
+                        <th>德语翻译</th>
+                        <th>示例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="english-term">Size</span></td>
+                        <td><span class="german-term">Größe</span></td>
+                        <td>Size: S → Größe: S</td>
+                    </tr>
+                    <tr>
+                        <td><span class="english-term">Waist</span></td>
+                        <td><span class="german-term">Taille</span></td>
+                        <td>Waist: 68cm → Taille: 68cm</td>
+                    </tr>
+                    <tr>
+                        <td><span class="english-term">Hip</span></td>
+                        <td><span class="german-term">Hüfte</span></td>
+                        <td>Hip: 110cm → Hüfte: 110cm</td>
+                    </tr>
+                    <tr>
+                        <td><span class="english-term">Inseam</span></td>
+                        <td><span class="german-term">Innenbeinlänge</span></td>
+                        <td>Inseam: 70cm → Innenbeinlänge: 70cm</td>
+                    </tr>
+                    <tr>
+                        <td><span class="english-term">Length</span></td>
+                        <td><span class="german-term">Länge</span></td>
+                        <td>Length: 100cm → Länge: 100cm</td>
+                    </tr>
+                    <tr>
+                        <td><span class="english-term">Chest</span></td>
+                        <td><span class="german-term">Brustumfang</span></td>
+                        <td>Chest: 95cm → Brustumfang: 95cm</td>
+                    </tr>
+                    <tr>
+                        <td><span class="english-term">Shoulder</span></td>
+                        <td><span class="german-term">Schulter</span></td>
+                        <td>Shoulder: 42cm → Schulter: 42cm</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="info-box">
+                <strong>使用说明:</strong> 输入英语尺寸描述后，工具会同时生成英语和德语的HTML格式输出。英语输出保持原样，德语输出会自动翻译尺寸术语。每行之间用 &lt;br /&gt; 标签分隔，可直接用于网页显示。
+            </div>
+        </div>
+        
+        <footer>
+            <p>尺寸测量双语言HTML转换器 © 2023 | 英语和德语HTML格式同时输出</p>
+        </footer>
+    </div>
+
+    <script>
+        // 翻译映射表
+        const translationMap = {
+            'Size': 'Größe',
+            'Waist': 'Taille',
+            'Hip': 'Hüfte',
+            'Inseam': 'Innenbeinlänge',
+            'Length': 'Länge',
+            'Chest': 'Brustumfang',
+            'Shoulder': 'Schulter',
+            'Sleeve': 'Ärmellänge',
+            'Bust': 'Brustumfang',
+            'Height': 'Körpergröße',
+            'Weight': 'Gewicht',
+            'Thigh': 'Oberschenkel',
+            'Knee': 'Knie',
+            'Ankle': 'Knöchel',
+            'Neck': 'Hals',
+            'Arm': 'Arm',
+            'Leg': 'Bein'
+        };
+
+        // DOM元素
+        const englishInput = document.getElementById('english-input');
+        const englishOutput = document.getElementById('english-output');
+        const germanOutput = document.getElementById('german-output');
+        const englishHtmlCode = document.getElementById('english-html-code');
+        const germanHtmlCode = document.getElementById('german-html-code');
+        const convertBtn = document.getElementById('convert-btn');
+        const loadExampleBtn = document.getElementById('load-example');
+        const clearInputBtn = document.getElementById('clear-input');
+        const realtimeToggle = document.getElementById('realtime-toggle');
+        const copyEnglishHtmlBtn = document.getElementById('copy-english-html');
+        const copyEnglishTextBtn = document.getElementById('copy-english-text');
+        const copyGermanHtmlBtn = document.getElementById('copy-german-html');
+        const copyGermanTextBtn = document.getElementById('copy-german-text');
+
+        // 示例数据
+        const exampleEnglishText = `Size: S Waist: 68cm/26.77'' Hip: 110cm/43.31'' Inseam: 70cm/27.56'' Length: 100cm/39.37'' 
+Size: M Waist: 73cm/28.74'' Hip: 114cm/44.88'' Inseam: 71cm/27.95'' Length: 101cm/39.76'' 
+Size: L Waist: 78cm/30.71'' Hip: 120cm/47.24'' Inseam: 72cm/28.35'' Length: 102cm/40.16'' 
+Size: XL Waist: 83cm/32.68'' Hip: 126cm/49.61'' Inseam: 73cm/28.74'' Length: 103cm/40.55'' 
+Size: XXL Waist: 88cm/34.65'' Hip: 132cm/51.97'' Inseam: 74cm/29.13'' Length: 104cm/40.94'' 
+Size: XXXL Waist: 93cm/36.61'' Hip: 136cm/53.54'' Inseam: 75cm/29.53'' Length: 105cm/41.34''`;
+
+        // 加载示例
+        loadExampleBtn.addEventListener('click', function() {
+            englishInput.value = exampleEnglishText;
+            convertToBothLanguages();
+        });
+
+        // 清空输入
+        clearInputBtn.addEventListener('click', function() {
+            englishInput.value = '';
+            englishOutput.textContent = '英语HTML输出将在这里显示...';
+            germanOutput.textContent = '德语HTML输出将在这里显示...';
+            englishHtmlCode.textContent = '';
+            germanHtmlCode.textContent = '';
+        });
+
+        // 转换按钮
+        convertBtn.addEventListener('click', convertToBothLanguages);
+
+        // 实时转换开关
+        realtimeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                // 启用实时转换
+                englishInput.addEventListener('input', handleRealtimeConversion);
+            } else {
+                // 禁用实时转换
+                englishInput.removeEventListener('input', handleRealtimeConversion);
+            }
+        });
+
+        // 实时转换处理
+        function handleRealtimeConversion() {
+            if (englishInput.value.trim().length > 0) {
+                convertToBothLanguages();
+            }
+        }
+
+        // 主要转换函数
+        function convertToBothLanguages() {
+            const englishText = englishInput.value.trim();
+            
+            if (!englishText) {
+                englishOutput.textContent = '请输入英语尺寸描述。';
+                germanOutput.textContent = '请输入英语尺寸描述。';
+                englishHtmlCode.textContent = '';
+                germanHtmlCode.textContent = '';
+                return;
+            }
+            
+            // 处理英语输出
+            const englishLines = englishText.split('\n').filter(line => line.trim() !== '');
+            const englishHtml = englishLines.join('<br />');
+            const englishTextOnly = englishLines.join('\n');
+            
+            // 处理德语输出
+            let germanLines = [];
+            englishLines.forEach(line => {
+                if (line.trim() === '') return;
+                
+                let germanLine = line;
+                
+                // 替换英语术语为德语术语
+                for (const [english, german] of Object.entries(translationMap)) {
+                    // 创建正则表达式匹配整个单词后跟冒号
+                    const regex = new RegExp(`\\b${english}:`, 'gi');
+                    germanLine = germanLine.replace(regex, `${german}:`);
+                }
+                
+                germanLines.push(germanLine.trim());
+            });
+            
+            const germanHtml = germanLines.join('<br />');
+            const germanTextOnly = germanLines.join('\n');
+            
+            // 显示英语输出
+            englishOutput.innerHTML = englishHtml;
+            englishHtmlCode.textContent = englishHtml;
+            
+            // 显示德语输出
+            germanOutput.innerHTML = germanHtml;
+            germanHtmlCode.textContent = germanHtml;
+        }
+
+        // 复制英语HTML
+        copyEnglishHtmlBtn.addEventListener('click', function() {
+            const htmlText = englishHtmlCode.textContent;
+            copyToClipboard(htmlText, this);
+        });
+
+        // 复制英语文本
+        copyEnglishTextBtn.addEventListener('click', function() {
+            const text = englishOutput.textContent || englishOutput.innerText;
+            copyToClipboard(text, this);
+        });
+
+        // 复制德语HTML
+        copyGermanHtmlBtn.addEventListener('click', function() {
+            const htmlText = germanHtmlCode.textContent;
+            copyToClipboard(htmlText, this);
+        });
+
+        // 复制德语文本
+        copyGermanTextBtn.addEventListener('click', function() {
+            const text = germanOutput.textContent || germanOutput.innerText;
+            copyToClipboard(text, this);
+        });
+
+        // 复制到剪贴板函数
+        function copyToClipboard(text, button) {
+            if (!text || text.trim() === '') {
+                alert('没有内容可复制！');
+                return;
+            }
+            
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = text;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    const originalText = button.textContent;
+                    button.textContent = '已复制!';
+                    button.style.backgroundColor = '#4CAF50';
+                    
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.style.backgroundColor = '';
+                    }, 2000);
+                } else {
+                    alert('复制失败，请手动选择文本复制。');
+                }
+            } catch (err) {
+                alert('复制出错: ' + err);
+            }
+            
+            document.body.removeChild(tempTextArea);
+        }
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            // 默认加载示例并转换
+            convertToBothLanguages();
+            
+            // 启用实时转换
+            englishInput.addEventListener('input', handleRealtimeConversion);
+        });
+    </script>
+</body>
+</html>

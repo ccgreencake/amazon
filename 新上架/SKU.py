@@ -4,7 +4,7 @@ from openpyxl import load_workbook
 from datetime import date
 
 # --- 配置区域 ---
-folder_path = "F:\\上架\\260416"
+folder_path = "F:\\上架\\260528"
 
 # 模式选择：
 # 'exclude_merge' -> 排除文件名带 "merge" 的文件

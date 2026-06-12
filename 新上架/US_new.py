@@ -9,26 +9,26 @@ from 新上架.Utils import SystemTools
 
 char_prefix='T'
 if char_prefix == 'T':
-    price = 32.49
+    price = 29.99
     shipping = 0
-    list_price = 32.49
+    list_price = price
 else:
-    price = 9.99
+    price = 7.99
     shipping = 3.99
     list_price = price + shipping
 
 # 文件编号
-current_file_index = 3
+current_file_index = 1
 
 
 
 
 # 1. 基础设置
-type = "SHORTS"  # 你的变量
-brand = 'YOULE'    # 'YOULE' 或 'LIANG' 或 'SGTED'
-cibiao = 'men tactical shorts'
+type = "PANTS"  # 你的变量
+brand = 'LIANG'    # 'YOULE' 或 'LIANG' 或 'SGTED' 或 'ZHENG'
+cibiao = 'wide_leg'
 # 性别
-gender = "men"
+gender = "women"
 # 2. 定义 type 到 文件名核心部分的映射关系 (根据图片显示)
 # 注意：这里把多个 type 指向了同一个合并后的文件名
 type_to_file_core = {
@@ -41,7 +41,8 @@ type_to_file_core = {
     "SHIRT":            "SHIRT",
     "SKIRT":            "SKIRT",
     "SWIMWEAR":         "SWIMWEAR",
-    "ONE_PIECE_OUTFIT": "ONE_PIECE_OUTFIT"
+    "ONE_PIECE_OUTFIT": "ONE_PIECE_OUTFIT",
+    "COAT":             "COAT"
 }
 
 # 3. 根据品牌动态生成路径和文件名前缀
@@ -55,6 +56,9 @@ elif brand == 'LIANG':
 elif brand == 'SGTED':
     folder_name = "SGTED模板"
     file_prefix = "sg_"
+elif brand == 'ZHENG':
+    folder_name = "ZHENG模板"
+    file_prefix = "zh_"
 else:
     raise ValueError(f"未知的品牌: {brand}")
 
@@ -279,6 +283,7 @@ size = raw_df["亚马逊尺寸"]
 type_to_category = {
     "SWEATSHIRT": "Apparel",
     "DRESS": "Apparel",
+    "COAT": "Apparel",
     "OVERALLS": "Bottoms",
     "SHORTS": "Bottoms",
     "PANTS": "Bottoms",
